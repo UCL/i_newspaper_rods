@@ -24,11 +24,12 @@ def main():
     stdout.setFormatter(logging.Formatter(str(communicator.rank)+'/'+str(communicator.size)+
         ' %(levelname)s: %(asctime)s %(message)s'))
     perfLogger.addHandler(stdout)
-    result = query(mapper, reducer, args.corpus_path, args.downsample, args.bybook,
+    result = query(mapper, reducer, args.corpus_path, args.downsample,
                    shuffler=shuffler, reporter=reporter)
-    outpath=args.outpath+'_'+str(MPI.COMM_WORLD.rank)+'.yml'
+
     if result:
         if args.outpath:
+            outpath=args.outpath+'_'+str(MPI.COMM_WORLD.rank)+'.yml'
             with open(outpath,'w') as result_file:
                 result_file.write(yaml.safe_dump(result))
                 perfLogger.info("Written result")

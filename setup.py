@@ -22,7 +22,7 @@ setup(
     ],
     entry_points={
           'console_scripts': [
-              'newsrods = inr.harness.query:main',
+              'newsrods = newsrods.harness.query:main',
           ]
       },
 )
