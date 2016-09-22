@@ -11,14 +11,7 @@ class TDAIRodsManager:
         self.store = None
 
     def get_all_object_IDs_and_store(self):
-        args = ["iquest","--no-page",'"%s"',
-                '"SELECT DATA_PATH where COLL_NAME like '+
-                "'"+self.path+"%' "+
-                "and DATA_NAME like '%.xml' and DATA_RESC_HIER = 'wos;wosArchive'"+
-                '"']
-        results=subprocess.Popen(args, stdout=subprocess.PIPE)
-        res = results.communicate()[0].split('\n')[:-1]
-        self.store=map(lambda x:x[1:-1], res) # Remove initial and final quote
+        
 
     def __len__(self):
         if not self.store:

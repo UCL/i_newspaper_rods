@@ -8,7 +8,7 @@ import logging
 import re
 
 class Issue(object):
-    def __init__(self, code, corpus):
+    def __init__(self, stream):
         self.namespaces= {
             "mods":'http://www.loc.gov/mods/v3',
             "mets":'http://www.loc.gov/METS/'
@@ -19,6 +19,8 @@ class Issue(object):
         self.pages=None
 
     def load(self):
+        self.logger.debug("Don't attempt to build issue yet.")
+        return # for now
         if self.pages:
             return
         self.logger.debug("Loading issue metadata")

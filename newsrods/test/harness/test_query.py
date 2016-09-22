@@ -1,5 +1,5 @@
-from ..fixtures import mean_pages as sample_query
-from ..fixtures import path
+
+from ..fixtures import *
 
 from ...harness.query import query, clparser
 

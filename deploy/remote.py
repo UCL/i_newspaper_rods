@@ -25,14 +25,14 @@ def cold(branch='master'):
     with cd(env.deploy_to):
         with modules:
                  run('git clone '+env.clone_url)
-                 with cd('dataspring'):
+                 with cd('i_newspaper_rods'):
                      run('git checkout '+branch)
                      run('python setup.py develop --user')
                      run('py.test')
 
 @task
 def warm(branch='master'):
-  with cd(os.path.join(env.deploy_to,'dataspring')):
+  with cd(os.path.join(env.deploy_to,'i_newspaper_rods')):
         with modules:
                  run('echo $PYTHONPATH')
                  run('git checkout '+branch)
@@ -43,7 +43,7 @@ def warm(branch='master'):
 
 @task
 def test(branch='master'):
-  with cd(os.path.join(env.deploy_to,'dataspring')):
+  with cd(os.path.join(env.deploy_to,'i_newspaper_rods')):
         with modules:
              run('py.test')
 

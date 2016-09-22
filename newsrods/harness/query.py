@@ -1,5 +1,4 @@
 from ..model.corpus import Corpus
-from ..model.dataset import DataSet
 from mpi4py import MPI
 import imp
 import sys

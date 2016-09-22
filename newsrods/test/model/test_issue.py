@@ -1,9 +1,7 @@
 from unittest import TestCase
 from lxml import etree
 
-from ...model.issue import issue
 from ...model.issue import Issue
-from ..fixtures import path
 
 class test_issue(TestCase):
     def setUp(self):

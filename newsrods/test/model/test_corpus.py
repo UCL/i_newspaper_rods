@@ -1,25 +1,14 @@
 from unittest import TestCase
 
 from ...model.corpus import Corpus
-from ..fixtures import path
 
 import numpy as np
 
 class test_corpus(TestCase):
     def setUp(self):
-        from mpi4py import MPI
-        self.communicator=MPI.COMM_WORLD
-        self.source=path('corpus24')
-        self.corpus=Corpus(self.source,self.communicator)
-    def test_glob(self):
-        assert(len(self.corpus)==24)
-    def test_downsample(self):
-        result = self.corpus.analyse(lambda x: np.array([1, x.pages]),
-                lambda x,y: x+y, 2)
-        assert result.shape==(2,)
-        assert result[0]==12
-    def test_analyse(self):
-        result = self.corpus.analyse(lambda x: np.array([1, x.pages]), lambda x,y: x+y)
-        assert result.shape==(2,)
-        assert result[0]==24
-        assert result[1]==8364
+        #from mpi4py import MPI
+        self.communicator=None
+        self.source='/rdZone/live/rd009s/2TB-Drive-Transfer-06-07-q2016/TDA_GDA_1785-2009'
+        self.corpus=Corpus(self.source, self.communicator)
+    def test_count(self):
+        assert(len(self.corpus)==75503)
