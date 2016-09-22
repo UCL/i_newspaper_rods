@@ -8,8 +8,6 @@ from StringIO import StringIO
 from issue import Issue
 from functools import reduce
 
-from ..secrets import password
-
 from ..harness.mapreduce import MapReduce
 from ..harness.utils import merge
 from ..harness.decomposer import Decomposer

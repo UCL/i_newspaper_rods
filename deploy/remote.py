@@ -15,7 +15,9 @@ env.user='ucgajhe'
 
 modules = nested(prefix('module swap compilers compilers/gnu'),
      prefix('module swap mpi mpi/openmpi/1.10.1/gnu-4.9.2'),
-     prefix('module load python2/recommended'))
+     prefix('module load python2/recommended'),
+     prefix('module load icommands'),
+     )
 
 @task
 def cold(branch='master'):
@@ -28,6 +30,7 @@ def cold(branch='master'):
                  with cd('i_newspaper_rods'):
                      run('git checkout '+branch)
                      run('python setup.py develop --user')
+                     run('iinit')
                      run('py.test')
 
 @task
@@ -45,6 +48,7 @@ def warm(branch='master'):
 def test(branch='master'):
   with cd(os.path.join(env.deploy_to,'i_newspaper_rods')):
         with modules:
+             run('iinit')
              run('py.test')
 
 @task
