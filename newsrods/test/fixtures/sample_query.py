@@ -1,7 +1,7 @@
 #sample query: return count of articles that mention Disraeli
 
 def mapper(article):
-    if "Disraeli" in article.content:
+    if "Disraeli" in article.words():
         return 1
     else:
         return 0

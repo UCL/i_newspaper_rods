@@ -23,6 +23,7 @@ class Issue(object):
         self.logger.debug("Don't attempt to build issue yet.")
         if self.articles:
             return
+        return # Stub for now
         result= requests.get('http://arthur.rd.ucl.ac.uk/objects/'+self.code,
                 stream=True)
         stream = result.iter_content(4096)
@@ -101,6 +102,8 @@ class Issue(object):
             yield string
 
     def words(self):
+        yield "Disraeli" #Stub for testing harness
+        return #Stub for testing harness
         for page, word in self.scan_words():
             yield word
 
