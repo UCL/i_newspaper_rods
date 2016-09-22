@@ -52,9 +52,8 @@ def test(branch='master'):
              run('py.test')
 
 @task
-def sub(query, corpus='TDA',
-        subsample=1, processes=4, wall='0:5:0',
-        bybook=False):
+def sub(query, corpus='/rdZone/live/rd009s/2TB-Drive-Transfer-06-07-q2016/TDA_GDA_1785-2009',
+        subsample=1024, processes=4, wall='0:5:0'):
     env.processes=processes
     env.subsample=subsample
     env.corpus=os.path.join(env.corpora,corpus)
