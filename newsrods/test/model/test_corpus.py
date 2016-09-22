@@ -12,3 +12,5 @@ class test_corpus(TestCase):
         self.corpus=Corpus(self.source, self.communicator)
     def test_count(self):
         assert(len(self.corpus)==75503)
+    def test_get_oid(self):
+        assert self.corpus.oid(0)=='cDdKH1qVCk87-TC6tGIb1oq6HN2sGC5q7k2DMb_B'

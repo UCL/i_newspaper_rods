@@ -73,6 +73,8 @@ def sub(query, corpus='TDA',
     with cd(env.run_at):
        put(config_file_path,env.dest_query)
        put(script_local_path,'query.sh')
+       with modules:
+           run('iinit')
        run('qsub query.sh')
 
 @task

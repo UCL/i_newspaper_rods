@@ -3,6 +3,7 @@ import os
 import traceback
 import requests
 import subprocess
+import logging
 from StringIO import StringIO
 
 from issue import Issue
@@ -15,15 +16,10 @@ from ..harness.decomposer import Decomposer
 import logging
 
 class Corpus(object):
-    def __init__(self, path=None, communicator=None):
+    def __init__(self, path=None):
         self.path = path
         self.store = None
-        self.communicator = communicator
-
-    def analyse(self, mapper, reducer, subsample=1, shuffler=None):
-        harness = MapReduce(self.loadingMap(mapper), reducer,
-            self.communicator, subsample, shuffler=shuffler)
-        return harness.execute(self)
+        self.logger = logging.getLogger('performance')
 
     def loadingMap(self, mapper):
         def _map(issue):
@@ -62,15 +58,13 @@ class Corpus(object):
 
         return len(self.store)
 
-    def __getitem__(self, index):
+    def oid(self, index):
         if not self.store:
             self.get_all_object_IDs_and_store()
+        return self.store[index]
 
-        oid= self.store[index]
-        path = 'http://arthur.rd.ucl.ac.uk/objects/'+oid
-        result= requests.get('http://arthur.rd.ucl.ac.uk/objects/'+oid,
-                stream=True)
-        return Issue(result.iter_content(4096))
+    def __getitem__(self, index):
+        return Issue(self.oid(index))
 
     def __len__(self):
         return self.count()

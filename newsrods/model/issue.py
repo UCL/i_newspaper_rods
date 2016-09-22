@@ -1,28 +1,32 @@
 from lxml import etree
 
-from page import Page
+from article import Article
 
 from collections import defaultdict
 
 import logging
 import re
+import requests
 
 class Issue(object):
-    def __init__(self, stream):
+    def __init__(self, oid):
         self.namespaces= {
             "mods":'http://www.loc.gov/mods/v3',
             "mets":'http://www.loc.gov/METS/'
         }
+        self.path = 'http://arthur.rd.ucl.ac.uk/objects/'+oid
         self.logger=logging.getLogger('performance')
-        self.code = code
-        self.corpus = corpus
-        self.pages=None
+        self.code = oid
+        self.articles=None
 
     def load(self):
         self.logger.debug("Don't attempt to build issue yet.")
-        return # for now
-        if self.pages:
+        if self.articles:
             return
+        result= requests.get('http://arthur.rd.ucl.ac.uk/objects/'+self.code,
+                stream=True)
+        stream = result.iter_content(4096)
+        return #for now
         self.logger.debug("Loading issue metadata")
         self.metadata=self.archive.metadata_file(self.code)
         self.logger.debug("Building issue metadata")

@@ -1,7 +1,7 @@
 from lxml import etree
 
-class Page(object):
-    
+class Article(object):
+
     words_path=etree.XPath('//String/@CONTENT')
     strings_path=etree.XPath('//String')
     images_path=etree.XPath('//GraphicalElement')
@@ -21,13 +21,13 @@ class Page(object):
 
     def query(self, q):
         return q(self.tree)
-    
+
     def single_query(self, query):
         result=self.query(query)
         if not result:
             return None
         return result[0]
-    
+
     @property
     def words(self):
         if not self.bwords:
@@ -68,7 +68,7 @@ class Page(object):
         for ebox in boxen:
             ebox['transform']=axes.transData
             # first, render a text patch
-            text=axes.text(ebox.x,ebox.y,ebox.content, verticalalignment='top', 
+            text=axes.text(ebox.x,ebox.y,ebox.content, verticalalignment='top',
                     horizontalalignment='left')
                     #fontsize=font_scaling,bbox=box)
             # then, determine its bbox in data units

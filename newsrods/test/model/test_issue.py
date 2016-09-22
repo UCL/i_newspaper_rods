@@ -5,17 +5,14 @@ from ...model.issue import Issue
 
 class test_issue(TestCase):
     def setUp(self):
-        source=path('rodspath')
-        self.issue=Issue(self.arc)
+        self.issue=Issue('cDdKH1qVCk87-TC6tGIb1oq6HN2sGC5q7k2DMb_B')
         self.issue.load()
     def test_title(self):
         assert "Love the Avenger" in self.issue.title
     def test_place(self):
         assert "London" in self.issue.place
     def test_code(self):
-        assert self.issue.code == '000000218'
-        assert self.issue.code in self.arc.issue_codes
-        assert '03_000002' in self.arc.issue_codes[self.issue.code]
+        assert self.issue.code == 'cDdKH1qVCk87-TC6tGIb1oq6HN2sGC5q7k2DMb_B'
     def test_page_codes(self):
         assert '03_000002' in self.issue.page_codes
     def test_pages(self):

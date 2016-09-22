@@ -8,9 +8,10 @@ import logging
 import yaml
 from utils import *
 
+from mapreduce import MapReduce
+
 shuffler=None
 reporter=None
-parser=Corpus
 
 def main():
     args = clparser(sys.argv[1:])
@@ -24,7 +25,7 @@ def main():
         ' %(levelname)s: %(asctime)s %(message)s'))
     perfLogger.addHandler(stdout)
     result = query(mapper, reducer, args.corpus_path, args.downsample, args.bybook,
-                   parser=parser, shuffler=shuffler, reporter=reporter)
+                   shuffler=shuffler, reporter=reporter)
     outpath=args.outpath+'_'+str(MPI.COMM_WORLD.rank)+'.yml'
     if result:
         if args.outpath:
@@ -44,16 +45,15 @@ def clparser(commandline):
     args=clparser.parse_args(commandline)
     return args
 
-def query(mapper, reducer, corpus_path, downsample=1, bybook=False, parser=parser, shuffler=None, reporter=None):
+def query(mapper, reducer, corpus_path, downsample=1, shuffler=None, reporter=None):
     communicator=MPI.COMM_WORLD
     perfLogger=logging.getLogger('performance')
-    if parser==Corpus:
-        corpus=Corpus(corpus_path,communicator)
-        perfLogger.info("Constructed")
-        result = corpus.analyse(mapper, reducer, downsample, bybook, shuffler=shuffler)
-    else:
-        corpus=DataSet(parser, corpus_path, communicator)
-        result = corpus.analyse_by_file(mapper, reducer, downsample, shuffler=shuffler  )
+    corpus=Corpus(corpus_path)
+    perfLogger.info("Constructed")
+    harness = MapReduce(corpus.loadingMap(mapper), reducer,
+                communicator, downsample, shuffler=shuffler)
+    result = harness.execute(corpus)
+
     perfLogger.info("Finished analysis")
     if (not shuffler) and communicator.rank !=0:
         result=None

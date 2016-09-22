@@ -1,16 +1,13 @@
 
-from ..fixtures import *
+from ..fixtures import sample_query
 
 from ...harness.query import query, clparser
 
 def test_query():
-    source=path('corpus24')
-    from mpi4py import MPI
-    result=query(sample_query.mapper, sample_query.reducer, source)
-    if MPI.COMM_WORLD.rank==0:
-        assert result == [24,8364]
-    else:
-        assert result == None
+    result=query(sample_query.mapper, sample_query.reducer,
+        '/rdZone/live/rd009s/2TB-Drive-Transfer-06-07-q2016/TDA_GDA_1785-2009',
+        2048)
+    assert result == 50
 
 def test_parser_simple():
     space=clparser(['abc','def'])
