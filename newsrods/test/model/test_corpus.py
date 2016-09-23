@@ -2,7 +2,8 @@ from unittest import TestCase
 
 from ...model.corpus import Corpus
 
-import numpy as np
+from tempfile import mkdtemp
+import os
 
 class test_corpus(TestCase):
     def setUp(self):
@@ -11,4 +12,10 @@ class test_corpus(TestCase):
     def test_count(self):
         assert(len(self.corpus)==75503)
     def test_get_oid(self):
-        assert self.corpus.oid(0)=='cDdKH1qVCk87-TC6tGIb1oq6HN2sGC5q7k2DMb_B'
+        assert 'cDdKH1qVCk87-TC6tGIb1oq6HN2sGC5q7k2DMb_B' in self.corpus.oids()
+    def test_save_load_corpus(self):
+        td = mkdtemp()
+        tf = os.path.join(td,'corpus.yml')
+        self.corpus.save(tf)
+        c2 = Corpus(tf,True)
+        assert 'cDdKH1qVCk87-TC6tGIb1oq6HN2sGC5q7k2DMb_B' in self.corpus.oids()

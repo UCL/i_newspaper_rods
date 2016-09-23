@@ -52,8 +52,8 @@ def test(branch='master'):
              run('py.test')
 
 @task
-def sub(query, corpus='/rdZone/live/rd009s/2TB-Drive-Transfer-06-07-q2016/TDA_GDA_1785-2009',
-        subsample=1024, processes=4, wall='0:5:0'):
+def sub(query, corpus='saved_ids.yml',
+        subsample=16, processes=4, wall='0:20:0'):
     env.processes=processes
     env.subsample=subsample
     env.corpus=os.path.join(env.corpora,corpus)
@@ -72,9 +72,14 @@ def sub(query, corpus='/rdZone/live/rd009s/2TB-Drive-Transfer-06-07-q2016/TDA_GD
     with cd(env.run_at):
        put(config_file_path,env.dest_query)
        put(script_local_path,'query.sh')
-       with modules:
-           run('iinit')
        run('qsub query.sh')
+
+@task
+def storeids(corpus='/rdZone/live/rd009s/2TB-Drive-Transfer-06-07-q2016/TDA_GDA_1785-2009'):
+    with cd(env.run_at):
+        with modules:
+            run('iinit')
+            run('/home/'+env.user+"/.python2local/bin/newsrods --storeids saved_ids.yml noquery "+corpus)
 
 @task
 def repartition(inpath='CompressedALTO64',out='downsample_result',count=64,processes=1, wall='0:15:0', downsample=1):

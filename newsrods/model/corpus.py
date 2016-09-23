@@ -14,12 +14,20 @@ from ..harness.utils import merge
 from ..harness.decomposer import Decomposer
 
 import logging
+import yaml
 
 class Corpus(object):
-    def __init__(self, path=None):
+    def __init__(self, path, preloaded=False):
         self.path = path
         self.store = None
         self.logger = logging.getLogger('performance')
+        if preloaded:
+            with open(path) as fdata:
+                self.store = yaml.load(fdata)
+
+    def save(self, path):
+        with open(path, 'w') as fdata:
+            yaml.dump(self.store, fdata)
 
     def loadingMap(self, mapper):
         def _map(issue):
@@ -43,6 +51,8 @@ class Corpus(object):
         return _map
 
     def get_all_object_IDs_and_store(self):
+        if self.store:
+            return
         args = ["iquest","--no-page",'"%s"',
                 '"SELECT DATA_PATH where COLL_NAME like '+
                 "'"+self.path+"%' "+
@@ -62,6 +72,11 @@ class Corpus(object):
         if not self.store:
             self.get_all_object_IDs_and_store()
         return self.store[index]
+
+    def oids(self):
+        if not self.store:
+            self.get_all_object_IDs_and_store()
+        return self.store
 
     def __getitem__(self, index):
         return Issue(self.oid(index))
