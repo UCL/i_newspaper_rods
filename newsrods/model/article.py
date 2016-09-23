@@ -35,12 +35,6 @@ class Article(object):
         return self.bwords
 
     @property
-    def strings(self):
-        if not self.bstrings:
-            self.bstrings=self.query(Page.words_path)
-        return self.bstrings
-
-    @property
     def images(self):
         if not self.bimages:
             self.bimages=self.query(Page.images_path)

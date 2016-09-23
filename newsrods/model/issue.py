@@ -10,28 +10,18 @@ import requests
 
 class Issue(object):
     def __init__(self, oid):
-        self.namespaces= {
-            "mods":'http://www.loc.gov/mods/v3',
-            "mets":'http://www.loc.gov/METS/'
-        }
         self.path = 'http://arthur.rd.ucl.ac.uk/objects/'+oid
         self.logger=logging.getLogger('performance')
         self.code = oid
-        self.articles=None
 
     def load(self):
-        self.logger.debug("Don't attempt to build issue yet.")
-        if self.articles:
-            return
-        return # Stub for now
+        self.logger.debug("Loading issue")
         result= requests.get('http://arthur.rd.ucl.ac.uk/objects/'+self.code,
                 stream=True)
-        stream = result.iter_content(4096)
+        self.logger.debug("Building issue DOM")
+        self.tree = etree.parse(result.raw)
+        self.date = self.single_query('//pf/text()')
         return #for now
-        self.logger.debug("Loading issue metadata")
-        self.metadata=self.archive.metadata_file(self.code)
-        self.logger.debug("Building issue metadata")
-        self.tree = etree.parse(self.metadata)
         self.title=self.single_query('//mods:title/text()')
         self.logger.debug("Sorting pages")
         self.page_codes = sorted(self.corpus.issue_codes[self.code], key=Issue.sorter)
@@ -70,16 +60,10 @@ class Issue(object):
         codes=map(int,page_code.split('_'))
 
     def query(self, query):
-        return self.tree.xpath(query, namespaces=self.namespaces)
+        return self.tree.xpath(query)
 
-    def page(self, code):
-        return Page(self, code)
-
-    def zip_info(self):
-        return self.corpus.zip_info_for_issue(self.code)
-
-    def page_zip_info(self,page_code):
-        return self.corpus.zip_info_for_page(self.code, page_code)
+    def article(self, code):
+        return Article(code)
 
     def single_query(self, query):
         result=self.query(query)
@@ -91,51 +75,20 @@ class Issue(object):
             return unicode(result[0])
 
     def __getitem__(self, index):
-        return self.page(self.page_codes[index])
+        return self.article(index)
 
     def __iter__(self):
-        for page_code in self.page_codes:
-            yield self.page(page_code)
+        # Somehow iterate through all the articles
+        pass
 
-    def strings(self):
-        for page, string in self.scan_strings():
-            yield string
 
     def words(self):
         yield "Disraeli" #Stub for testing harness
         return #Stub for testing harness
-        for page, word in self.scan_words():
-            yield word
+        # Somehow iterate through all the words in all the articles
 
     def images(self):
+        # Somehow iterate through all the pictures' metadata
+        # (Size, caption...)
         for page, image in self.scan_images():
             yield image
-
-    def scan_strings(self):
-        for page in self:
-            for word in page.strings:
-                yield page, word
-
-    def scan_words(self):
-        for page in self:
-            for word in page.words:
-                yield page, word
-
-    def scan_images(self):
-        for page in self:
-            for image in page.images:
-                yield page, image
-
-    def describe_relevant(self, scanner, checker):
-        finds=defaultdict(list)
-        content=dict()
-        for target in scanner:
-            find=checker(*target)
-            if find:
-                page, finding = find
-                finds[page].append(finding)
-        if finds:
-            return {self.year: [[self.title, self.year, self.place, self.publisher,
-                                 [[page.code, page.content, finds] for page,finds in finds.iteritems()]]]}
-        else:
-            return None
