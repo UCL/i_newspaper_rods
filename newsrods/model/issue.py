@@ -3,6 +3,7 @@ from lxml import etree
 from article import Article
 
 from collections import defaultdict
+from datetime import datetime
 
 import logging
 import re
@@ -20,7 +21,8 @@ class Issue(object):
                 stream=True)
         self.logger.debug("Building issue DOM")
         self.tree = etree.parse(result.raw)
-        self.date = self.single_query('//pf/text()')
+        raw_date = self.single_query('//pf/text()')
+        self.date = datetime.strptime(raw_date,"%Y%m%d")
         return #for now
         self.title=self.single_query('//mods:title/text()')
         self.logger.debug("Sorting pages")

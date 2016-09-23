@@ -1,5 +1,6 @@
 from unittest import TestCase
 from lxml import etree
+from datetime import date
 
 from ...model.issue import Issue
 
@@ -8,7 +9,9 @@ class test_issue(TestCase):
         self.issue=Issue('cDdKH1qVCk87-TC6tGIb1oq6HN2sGC5q7k2DMb_B')
         self.issue.load()
     def test_date(self):
-        assert self.issue.date=='19620314'
+        assert self.issue.date.year == 1962
+        assert self.issue.date.month == 03
+        assert self.issue.date.day == 14
 
     # def test_title(self):
     #     assert "Love the Avenger" in self.issue.title
