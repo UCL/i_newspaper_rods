@@ -52,7 +52,7 @@ def test(branch='master'):
              run('py.test')
 
 @task
-def sub(query, corpus='saved_ids.yml',
+def sub(query, corpus='output/saved_ids.yml',
         subsample=16, processes=4, wall='0:20:0'):
     env.processes=processes
     env.subsample=subsample
