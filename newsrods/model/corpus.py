@@ -56,7 +56,7 @@ class Corpus(object):
         args = ["iquest","--no-page",'"%s"',
                 '"SELECT DATA_PATH where COLL_NAME like '+
                 "'"+self.path+"%' "+
-                "and DATA_NAME like '%.xml' and DATA_RESC_HIER = 'wos;wosArchive'"+
+                "and DATA_NAME like '%-%.xml' and DATA_RESC_HIER = 'wos;wosArchive'"+
                 '"']
         results=subprocess.Popen(args, stdout=subprocess.PIPE)
         res = results.communicate()[0].split('\n')[:-1]
