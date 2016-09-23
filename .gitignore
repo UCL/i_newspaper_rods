@@ -89,3 +89,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Test data (DTD schema and save IDs' yaml)
+data/
