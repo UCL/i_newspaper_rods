@@ -12,7 +12,8 @@ class test_issue(TestCase):
         assert self.issue.date.year == 1962
         assert self.issue.date.month == 03
         assert self.issue.date.day == 14
-
+    def test_page_count(self):
+        assert self.issue.page_count == 24
     # def test_title(self):
     #     assert "Love the Avenger" in self.issue.title
     # def test_place(self):

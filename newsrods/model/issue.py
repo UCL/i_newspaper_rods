@@ -23,6 +23,7 @@ class Issue(object):
         self.tree = etree.parse(result.raw)
         raw_date = self.single_query('//pf/text()')
         self.date = datetime.strptime(raw_date,"%Y%m%d")
+        self.page_count = int(self.single_query('//ip/text()'))
         return #for now
         self.title=self.single_query('//mods:title/text()')
         self.logger.debug("Sorting pages")
