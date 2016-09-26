@@ -16,6 +16,8 @@ class test_issue(TestCase):
         assert self.issue.page_count == 88
     def test_day_of_week(self):
         assert self.issue.day_of_week == 'Monday'
+    def test_articles_per_issue(self):
+        assert len(self.issue.articles) == 580
     # def test_title(self):
     #     assert "Love the Avenger" in self.issue.title
     # def test_place(self):
