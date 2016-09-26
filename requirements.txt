@@ -1,0 +1,8 @@
+requests
+lxml
+mpi4py
+pyyaml
+pytest
+fabric
+mako
+numpy
