@@ -24,6 +24,7 @@ class Issue(object):
         raw_date = self.single_query('//pf/text()')
         self.date = datetime.strptime(raw_date,"%Y%m%d")
         self.page_count = int(self.single_query('//ip/text()'))
+        self.day_of_week = self.single_query('//dw/text()')
         return #for now
         self.title=self.single_query('//mods:title/text()')
         self.logger.debug("Sorting pages")
