@@ -21,10 +21,21 @@ class Issue(object):
                 stream=True)
         self.logger.debug("Building issue DOM")
         self.tree = etree.parse(result.raw)
+        # DTD says there's only one issue element
+        # Note there are two different DTDs:
+        # GALENP: /GALENP/*/issue/page/article/text/*/p/wd
+        # LTO: /issue/article/text/*/p/wd
+        try:
+            self.issue = self.tree.xpath('.//issue')[0]
+        except IndexError:
+            self.issue = self.tree.xpath('/issue')[0]
+        self.articles = self.issue.xpath('.//article')
         raw_date = self.single_query('//pf/text()')
         self.date = datetime.strptime(raw_date,"%Y%m%d")
         self.page_count = int(self.single_query('//ip/text()'))
         self.day_of_week = self.single_query('//dw/text()')
+        # for article in self.articles:
+        #     Article(article)
         return #for now
         self.title=self.single_query('//mods:title/text()')
         self.logger.debug("Sorting pages")
@@ -66,8 +77,8 @@ class Issue(object):
     def query(self, query):
         return self.tree.xpath(query)
 
-    def article(self, code):
-        return Article(code)
+    def article(self):
+        return Article()
 
     def single_query(self, query):
         result=self.query(query)
