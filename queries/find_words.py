@@ -104,12 +104,12 @@ interesting_words = map(lambda x: x.lower(),
                          'Luxemburgian'])
 
 def mapper(issue):
-    matching_articles = []
+    matching_articles = 0
     for article in issue.articles:
         for interesting_word in interesting_words:
             if interesting_word in article.words:
-                matching_articles.append(article)
+                matching_articles += 1
 
-    return {issue.date.year: [1, len(matching_articles)]}
+    return {issue.date.year: [1, matching_articles]}
 
 reducer=merge_under(double_sum)
