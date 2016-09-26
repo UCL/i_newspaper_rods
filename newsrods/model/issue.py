@@ -29,7 +29,8 @@ class Issue(object):
             self.issue = self.tree.xpath('.//issue')[0]
         except IndexError:
             self.issue = self.tree.xpath('/issue')[0]
-        self.articles = self.issue.xpath('.//article')
+        self.articles = [Article(article)
+                         for article in self.issue.xpath('.//article')]
         raw_date = self.single_query('//pf/text()')
         self.date = datetime.strptime(raw_date,"%Y%m%d")
         self.page_count = int(self.single_query('//ip/text()'))
