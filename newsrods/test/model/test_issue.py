@@ -6,14 +6,16 @@ from ...model.issue import Issue
 
 class test_issue(TestCase):
     def setUp(self):
-        self.issue=Issue('cDdKH1qVCk87-TC6tGIb1oq6HN2sGC5q7k2DMb_B')
+        self.issue = Issue('qAr8caXjBSnUDlBpn1W-q4t9LC9AT4yC2lQfAFNA')
         self.issue.load()
     def test_date(self):
-        assert self.issue.date.year == 1962
-        assert self.issue.date.month == 03
-        assert self.issue.date.day == 14
+        assert self.issue.date.year == 2000
+        assert self.issue.date.month == 4
+        assert self.issue.date.day == 24
     def test_page_count(self):
-        assert self.issue.page_count == 24
+        assert self.issue.page_count == 88
+    def test_day_of_week(self):
+        assert self.issue.day_of_week == 'Monday'
     # def test_title(self):
     #     assert "Love the Avenger" in self.issue.title
     # def test_place(self):
