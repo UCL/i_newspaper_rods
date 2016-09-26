@@ -6,8 +6,8 @@ from ...model.issue import Issue
 
 class test_page(TestCase):
     def setUp(self):
-        issue=Issue('cDdKH1qVCk87-TC6tGIb1oq6HN2sGC5q7k2DMb_B')
+        issue = Issue('qAr8caXjBSnUDlBpn1W-q4t9LC9AT4yC2lQfAFNA')
         issue.load()
-        self.article=issue[0]
-    def test_content(self):
-        assert("LOVE THE AVENGER" in self.article.content)
+        self.article = issue.articles[0]
+    def test_words_in_article(self):
+        assert len(self.article.words) == 18
