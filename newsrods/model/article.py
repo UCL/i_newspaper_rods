@@ -9,8 +9,8 @@ class Article(object):
         # made of words (wd).
         self.title = self.tree.xpath('text/text.title/p/wd/text()')
         self.preamble = self.tree.xpath('text/text.preamble/p/wd/text()')
-        self.cr = self.tree.xpath('text/text.cr/p/wd/text()')
+        self.content = self.tree.xpath('text/text.cr/p/wd/text()')
 
     @property
     def words(self):
-        return self.title + self.preamble + self.cr
+        return self.title + self.preamble + self.content
