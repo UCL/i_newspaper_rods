@@ -1,5 +1,4 @@
 from functools import reduce
-from mpi4py import MPI
 from itertools import islice
 from datetime import datetime as time
 import logging
@@ -80,6 +79,7 @@ class MapReduce(object):
         def reduce_arrays(x,y,dtype):
             # the signature for the user defined op takes a datatype, which we can ignore
             return self.reducer(x,y)
+        from mpi4py import MPI
         reducer_mpi=MPI.Op.Create(reduce_arrays, True)
         perfLogger.debug("Local result: "+str(local_result)[0:60])
         if self.shuffler:
@@ -97,6 +97,6 @@ class MapReduce(object):
             result = self.communicator.reduce(local_result, op=reducer_mpi, root=0)
             result = self.communicator.bcast(result, root=0)
         perfLogger.info("Global reduce")
-        
+
         reducer_mpi.Free()
         return result

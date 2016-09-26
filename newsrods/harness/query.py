@@ -1,5 +1,4 @@
 from ..model.corpus import Corpus
-from mpi4py import MPI
 import imp
 import sys
 from datetime import datetime
@@ -17,11 +16,10 @@ def main():
     args = clparser(sys.argv[1:])
 
     perfLogger=logging.getLogger('performance')
-    communicator=MPI.COMM_WORLD
+
     perfLogger.setLevel(getattr(logging,args.loglevel.upper()))
     stdout=logging.StreamHandler()
-    stdout.setFormatter(logging.Formatter(str(communicator.rank)+'/'+str(communicator.size)+
-        ' %(levelname)s: %(asctime)s %(message)s'))
+    stdout.setFormatter(' %(levelname)s: %(asctime)s %(message)s')
     perfLogger.addHandler(stdout)
 
     if args.storeids:
@@ -30,6 +28,10 @@ def main():
         corpus.save(args.storeids)
         return
 
+    from mpi4py import MPI
+    communicator=MPI.COMM_WORLD
+    stdout.setFormatter(logging.Formatter(str(communicator.rank)+'/'+str(communicator.size)+
+            ' %(levelname)s: %(asctime)s %(message)s'))
     execfile(args.query_path, globals()) # must define 'mapper' and 'reducer'
                                          # may define shuffler and reporter
     result = query(mapper, reducer, args.corpus_path,
@@ -59,6 +61,7 @@ def clparser(commandline):
 
 def query(mapper, reducer, corpus_path, downsample=1, fromfile=False,
           shuffler=None, reporter=None):
+    from mpi4py import MPI
     communicator=MPI.COMM_WORLD
     perfLogger=logging.getLogger('performance')
     corpus=Corpus(corpus_path,fromfile)

@@ -7,7 +7,7 @@ def test_query():
     result=query(sample_query.mapper, sample_query.reducer,
         '/rdZone/live/rd009s/2TB-Drive-Transfer-06-07-q2016/TDA_GDA_1785-2009',
         2048)
-    assert result == 37
+    assert result == 36
 
 def test_parser_simple():
     space=clparser(['abc','def'])

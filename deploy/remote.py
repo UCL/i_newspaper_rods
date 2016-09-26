@@ -53,7 +53,7 @@ def test(branch='master'):
 
 @task
 def sub(query, corpus='output/saved_ids.yml',
-        subsample=16, processes=4, wall='0:20:0'):
+        subsample=1, processes=48, wall='1:0:0'):
     env.processes=processes
     env.subsample=subsample
     env.corpus=os.path.join(env.corpora,corpus)
@@ -81,23 +81,6 @@ def storeids(corpus='/rdZone/live/rd009s/2TB-Drive-Transfer-06-07-q2016/TDA_GDA_
             run('iinit')
             run('/home/'+env.user+"/.python2local/bin/newsrods --storeids saved_ids.yml noquery "+corpus)
 
-@task
-def repartition(inpath='CompressedALTO64',out='downsample_result',count=64,processes=1, wall='0:15:0', downsample=1):
-    env.inpath=os.path.join(env.corpora,inpath)
-    env.outpath=os.path.join(env.corpora,out)
-    env.processes=processes
-    env.wall=wall
-    env.count=count
-    env.downsample=downsample
-    template_file_path=os.path.join(os.path.dirname(__file__),env.machine+'-repartition.sh.mko')
-    script_local_path=os.path.join(os.path.dirname(__file__),env.machine+'-repartition.sh')
-    with open(template_file_path) as template:
-        script=Template(template.read()).render(**env)
-        with open(script_local_path,'w') as script_file:
-            script_file.write(script)
-    with cd(env.run_at):
-       put(script_local_path,'repartition.sh')
-       run('qsub repartition.sh')
 @task
 def stat():
     run('qstat')
