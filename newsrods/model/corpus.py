@@ -24,8 +24,11 @@ class Corpus(object):
         if preloaded:
             with open(path) as fdata:
                 self.store = yaml.load(fdata)
+            self.logger.debug("Loaded "+str(len(self.store))+" object IDs from file "+path)
 
     def save(self, path):
+        if not self.store:
+            self.get_all_object_IDs_and_store()
         with open(path, 'w') as fdata:
             yaml.dump(self.store, fdata)
 
