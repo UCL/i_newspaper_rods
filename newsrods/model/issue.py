@@ -11,16 +11,23 @@ import requests
 
 class Issue(object):
     def __init__(self, oid):
-        self.path = 'http://arthur.rd.ucl.ac.uk/objects/'+oid
-        self.logger=logging.getLogger('performance')
+        self.path = 'http://arthur.rd.ucl.ac.uk/objects/' + oid
+        self.logger = logging.getLogger('performance')
         self.code = oid
 
     def load(self):
         self.logger.debug("Loading issue")
-        result= requests.get('http://arthur.rd.ucl.ac.uk/objects/'+self.code,
+        result = requests.get('http://arthur.rd.ucl.ac.uk/objects/' + self.code,
                 stream=True)
         self.logger.debug("Building issue DOM")
-        self.tree = etree.parse(result.raw)
+        # Try hard to parse the file, even if it looks like this:
+        # <wd pos="1664,5777,2052,5799">Bart,OwnerndPetitioner.Take/wd>
+        parser = etree.XMLParser(recover=True)
+        try:
+            self.tree = etree.parse(result.raw, parser)
+        except etree.XMLSyntaxError as e:
+            self.logger.error("Error when parsing %s: %s", self.code, e.msg)
+            raise
         # DTD says there's only one issue element
         # Note there are two different DTDs:
         # GALENP: /GALENP/*/issue/page/article/text/*/p/wd
@@ -35,8 +42,6 @@ class Issue(object):
         self.date = datetime.strptime(raw_date,"%Y%m%d")
         self.page_count = int(self.single_query('//ip/text()'))
         self.day_of_week = self.single_query('//dw/text()')
-        # for article in self.articles:
-        #     Article(article)
         return #for now
 
     def query(self, query):
