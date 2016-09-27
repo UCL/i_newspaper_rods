@@ -1,9 +1,6 @@
-interesting_words = map(lambda x: x.lower(),
-                        ['Holland',
+interesting_words = ['Holland',
                          'Netherlands',
                          'Netherland',
-                         'Low',
-                         'Countries',
                          'Flanders',
                          'Flemish',
                          'Frisian',
@@ -15,10 +12,6 @@ interesting_words = map(lambda x: x.lower(),
                          'Amsterdam',
                          'Rotterdam',
                          'Utrecht',
-                         'The',
-                         'Hague',
-                         'Den',
-                         'Haag',
                          'Groningen',
                          'Leeuwarden',
                          'Zwolle',
@@ -54,11 +47,6 @@ interesting_words = map(lambda x: x.lower(),
                          'Vlieland',
                          'Batavia',
                          'Batavian',
-                         'Indies',
-                         'Dutch',
-                         'East',
-                         'Indies',
-                         'East',
                          'Indies',
                          'Suriname',
                          'Curacao',
@@ -101,15 +89,37 @@ interesting_words = map(lambda x: x.lower(),
                          'Luembourg',
                          'Luxemburg',
                          'Luxembourgian',
-                         'Luxemburgian'])
+                         'Luxemburgian']
+
+interesting_ngrams=[
+            ['Low','Countries'],
+            ['The','Hague'],
+            ['Den','Haag'],
+            ['East','Indies']
+]
+
+interesting_twograms_dict={
+    x[1]:x[0] for x in interesting_ngrams
+}
 
 def mapper(issue):
     matching_articles = 0
+    all_articles = 0
     for article in issue.articles:
-        for interesting_word in interesting_words:
-            if interesting_word in article.words:
-                matching_articles += 1
+        all_articles +=1
+        cword=None
+        for word in article.words:
+            preceding=cword
+            cword=word
+            if word in interesting_words:
+                matching_articles+=1
+                break
+            if word in interesting_twograms_dict.keys():
+                if preceding == interesting_twograms_dict[word]:
+                    matching_articles+=1
+                    break
 
-    return {issue.date.year: [1, matching_articles]}
 
-reducer=merge_under(double_sum)
+    return {issue.date.year: [1, all_articles, matching_articles]}
+
+reducer=merge_under(triple_sum)
