@@ -98,28 +98,14 @@ interesting_ngrams=[
             ['East','Indies']
 ]
 
-interesting_twograms_dict={
-    x[1]:x[0] for x in interesting_ngrams
-}
-
-def mapper(issue):
-    matching_articles = 0
-    all_articles = 0
-    for article in issue.articles:
-        all_articles +=1
-        cword=None
-        for word in article.words:
-            preceding=cword
-            cword=word
-            if word in interesting_words:
-                matching_articles+=1
-                break
-            if word in interesting_twograms_dict.keys():
-                if preceding == interesting_twograms_dict[word]:
-                    matching_articles+=1
-                    break
-
-
-    return {issue.date.year: [1, all_articles, matching_articles]}
-
-reducer=merge_under(triple_sum)
+def q(issues, sc):
+    # Ignoring 2-grams for now while trying out spark
+    articles = issues.flatMap(lambda x: [(x.date, article) for article in x.articles])
+    target_articles = articles.cartesian(sc.parallelize(interesting_words))
+    interesting_articles = target_articles.filter(lambda x: x[1] in x[0][1].words)
+    interesting_byyear = interesting_articles.map(
+                                lambda x: ((x[0][0].year, x[1]), 1)).countByKey()
+    # Now group on year first
+    #interesting_by_year = sc.parallelize(interesting_by_both).map(
+    #    lambda x: (x[0][0], (x[0][1], x[1]))).groupByKey().collect()
+    return dict(interesting_by_year)

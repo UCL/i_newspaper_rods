@@ -15,7 +15,6 @@ class Issue(object):
         self.logger = logging.getLogger('performance')
         self.code = oid
 
-    def load(self):
         self.logger.debug("Loading issue")
         result = requests.get('http://arthur.rd.ucl.ac.uk/objects/' + self.code,
                 stream=True)
@@ -62,12 +61,6 @@ class Issue(object):
     def __iter__(self):
         # Somehow iterate through all the articles
         pass
-
-
-    def words(self):
-        yield "Disraeli" #Stub for testing harness
-        return #Stub for testing harness
-        # Somehow iterate through all the words in all the articles
 
     def images(self):
         # Somehow iterate through all the pictures' metadata

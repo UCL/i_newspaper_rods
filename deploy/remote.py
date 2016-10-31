@@ -53,7 +53,7 @@ def test(branch='master'):
 
 @task
 def sub(query, corpus='output/saved_ids.yml',
-        subsample=1, processes=48, wall='1:0:0'):
+        subsample=1, processes=512, wall='2:0:0'):
     env.processes=processes
     env.subsample=subsample
     env.corpus=os.path.join(env.corpora,corpus)

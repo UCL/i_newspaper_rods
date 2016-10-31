@@ -32,27 +32,6 @@ class Corpus(object):
         with open(path, 'w') as fdata:
             yaml.dump(self.store, fdata)
 
-    def loadingMap(self, mapper):
-        def _map(issue):
-            self.logger.debug("Loading issue")
-            try:
-                issue.load()
-            except Exception as exception:
-                self.logger.warn("Problem loading " + issue.code + " in " + issue.path)
-                self.logger.warn(traceback.format_exc())
-                self.logger.warn(str(exception))
-            self.logger.debug("Loaded issue")
-            try:
-                self.logger.debug("Considering issue")
-                result= mapper(issue)
-                self.logger.debug("Considered issue")
-                return result
-            except Exception as exception:
-                self.logger.warn("Problem parsing " + issue.code + " in " + issue.path)
-                self.logger.warn(traceback.format_exc())
-                self.logger.warn(str(exception))
-        return _map
-
     def get_all_object_IDs_and_store(self):
         if self.store:
             return

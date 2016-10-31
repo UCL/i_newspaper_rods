@@ -1,4 +1,4 @@
-from ..model.corpus import Corpus
+from newsrods.model.corpus import Corpus, Issue
 import imp
 import sys
 from datetime import datetime
@@ -7,20 +7,8 @@ import logging
 import yaml
 from utils import *
 
-from mapreduce import MapReduce
-
-shuffler=None
-reporter=None
-
 def main():
     args = clparser(sys.argv[1:])
-
-    perfLogger=logging.getLogger('performance')
-
-    perfLogger.setLevel(getattr(logging,args.loglevel.upper()))
-    stdout=logging.StreamHandler()
-    stdout.setFormatter(' %(levelname)s: %(asctime)s %(message)s')
-    perfLogger.addHandler(stdout)
 
     if args.storeids:
         corpus = Corpus(args.corpus_path)
@@ -28,22 +16,16 @@ def main():
         corpus.save(args.storeids)
         return
 
-    from mpi4py import MPI
-    communicator=MPI.COMM_WORLD
-    stdout.setFormatter(logging.Formatter(str(communicator.rank)+'/'+str(communicator.size)+
-            ' %(levelname)s: %(asctime)s %(message)s'))
-    execfile(args.query_path, globals()) # must define 'mapper' and 'reducer'
-                                         # may define shuffler and reporter
-    result = query(mapper, reducer, args.corpus_path,
-                   args.downsample, args.fromfile,
-                   shuffler=shuffler, reporter=reporter)
+    execfile(args.query_path, globals()) # must define a function 'q',
+    # taking an rdd of Issues which need load() ing and an sc
+    result = query(q, args.corpus_path,
+                   args.downsample, args.fromfile)
 
     if result:
         if args.outpath:
-            outpath=args.outpath+'_'+str(MPI.COMM_WORLD.rank)+'.yml'
+            outpath=args.outpath+'.yml'
             with open(outpath,'w') as result_file:
                 result_file.write(yaml.safe_dump(result))
-                perfLogger.info("Written result")
         else:
             print result
 
@@ -59,23 +41,34 @@ def clparser(commandline):
     args=clparser.parse_args(commandline)
     return args
 
-def query(mapper, reducer, corpus_path, downsample=1, fromfile=False,
+def query(query, corpus_path, downsample=1, fromfile=False,
           shuffler=None, reporter=None):
-    from mpi4py import MPI
-    communicator=MPI.COMM_WORLD
-    perfLogger=logging.getLogger('performance')
-    corpus=Corpus(corpus_path,fromfile)
+
+    if 'sc' not in locals():
+        # No pre-loaded spark context, we are running
+        # via spark-submit rather than pyspark
+        from pyspark import SparkContext
+        sc = SparkContext(appName="NewsRods")
+
+    log4jLogger = sc._jvm.org.apache.log4j
+    perfLogger = log4jLogger.LogManager.getLogger("NewsRods")
+    perfLogger.info("pyspark script logger initialized")
+
+    corpus=Corpus(corpus_path, fromfile)
     perfLogger.info("Constructed")
-    harness = MapReduce(corpus.loadingMap(mapper), reducer,
-                communicator, downsample, shuffler=shuffler)
-    result = harness.execute(corpus)
+
+
+
+    rddoids = sc.parallelize(corpus.oids())
+    if downsample!=1:
+        down=rddoids.sample(False, 1.0 / downsample )
+    else:
+        down = rddoids
+    issues = down.map(Issue)
+    perfLogger.info("Preparing to run query")
+    result = query(issues, sc)
 
     perfLogger.info("Finished analysis")
-    if (not shuffler) and communicator.rank !=0:
-        result=None
-    if reporter and result:
-           result=reporter(result)
-           perfLogger.info("Finished postprocessing")
     return result
 
 if __name__ == "__main__":

@@ -7,7 +7,6 @@ from ...model.issue import Issue
 class test_issue(TestCase):
     def setUp(self):
         self.issue = Issue('qAr8caXjBSnUDlBpn1W-q4t9LC9AT4yC2lQfAFNA')
-        self.issue.load()
     def test_date(self):
         assert self.issue.date.year == 2000
         assert self.issue.date.month == 4
