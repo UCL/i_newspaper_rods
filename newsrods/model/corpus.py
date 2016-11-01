@@ -9,10 +9,6 @@ from StringIO import StringIO
 from issue import Issue
 from functools import reduce
 
-from ..harness.mapreduce import MapReduce
-from ..harness.utils import merge
-from ..harness.decomposer import Decomposer
-
 import logging
 import yaml
 
