@@ -103,9 +103,10 @@ def q(issues, sc):
     articles = issues.flatMap(lambda x: [(x.date, article) for article in x.articles])
     target_articles = articles.cartesian(sc.parallelize(interesting_words))
     interesting_articles = target_articles.filter(lambda x: x[1] in x[0][1].words)
-    interesting_byyear = interesting_articles.map(
-                                lambda x: ((x[0][0].year, x[1]), 1)).countByKey()
-    # Now group on year first
-    #interesting_by_year = sc.parallelize(interesting_by_both).map(
-    #    lambda x: (x[0][0], (x[0][1], x[1]))).groupByKey().collect()
+    interesting_by_both = interesting_articles.map(
+                                lambda x: ((x[0][0].year, x[1]), 1)).reduceByKey(
+                                lambda x, y: x+y)
+    interesting_by_year = interesting_by_both.map(
+        lambda x: (x[0][0], (x[0][1], x[1]))
+        ).groupByKey().map(lambda x: (x[0],list(x[1]))).collect()
     return dict(interesting_by_year)
