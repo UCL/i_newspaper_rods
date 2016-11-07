@@ -100,13 +100,9 @@ interesting_ngrams=[
 
 def q(issues, sc):
     # Ignoring 2-grams for now while trying out spark
-    articles = issues.flatMap(lambda x: [(x.date, article) for article in x.articles])
-    target_articles = articles.cartesian(sc.parallelize(interesting_words))
-    interesting_articles = target_articles.filter(lambda x: x[1] in x[0][1].words)
-    interesting_by_both = interesting_articles.map(
-                                lambda x: ((x[0][0].year, x[1]), 1)).reduceByKey(
-                                lambda x, y: x+y)
-    interesting_by_year = interesting_by_both.map(
+    articles = issues.flatMap(lambda x: [(x.date.year, article) for article in x.articles])
+    interest = articles.flatMap(lambda x: [((x[0], y), 1) for y in interesting_words if y in x[1].words])
+    interesting_by_year = interest.reduceByKey(lambda x,y: x+y).map(
         lambda x: (x[0][0], (x[0][1], x[1]))
         ).groupByKey().map(lambda x: (x[0],list(x[1]))).collect()
     return dict(interesting_by_year)

@@ -26,7 +26,8 @@ class Issue(object):
             self.tree = etree.parse(result.raw, parser)
         except etree.XMLSyntaxError as e:
             self.logger.error("Error when parsing %s: %s", self.code, e.msg)
-            raise
+            self.tree = None
+            return
         # DTD says there's only one issue element
         # Note there are two different DTDs:
         # GALENP: /GALENP/*/issue/page/article/text/*/p/wd
@@ -44,7 +45,11 @@ class Issue(object):
         return #for now
 
     def query(self, query):
-        return self.tree.xpath(query)
+        if not self.tree return []
+        try:
+            return self.tree.xpath(query)
+        except AssertionError:
+            return []
 
     def single_query(self, query):
         result=self.query(query)
