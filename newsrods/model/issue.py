@@ -45,7 +45,8 @@ class Issue(object):
         return #for now
 
     def query(self, query):
-        if not self.tree return []
+        if not self.tree:
+            return []
         try:
             return self.tree.xpath(query)
         except AssertionError:
