@@ -102,24 +102,17 @@ interesting_twograms_dict={
     x[1]:x[0] for x in interesting_ngrams
 }
 
+import collections
+
 def mapper(issue):
-    matching_articles = 0
+    matching_articles = collections.defaultdict(int)
     all_articles = 0
     for article in issue.articles:
         all_articles +=1
-        cword=None
-        for word in article.words:
-            preceding=cword
-            cword=word
-            if word in interesting_words:
-                matching_articles+=1
-                break
-            if word in interesting_twograms_dict.keys():
-                if preceding == interesting_twograms_dict[word]:
-                    matching_articles+=1
-                    break
+        for word in interesting_words:
+            if word in article.words:
+                matching_articles[word]+=1
 
+    return {issue.date.year: dict(matching_articles)}
 
-    return {issue.date.year: [1, all_articles, matching_articles]}
-
-reducer=merge_under(triple_sum)
+reducer=merge_under(merge_under(sum))
