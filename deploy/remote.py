@@ -5,13 +5,13 @@ import os
 from datetime import datetime
 from contextlib import nested
 
-env.run_at="/home/ucgajhe/Scratch/TDA/output"
-env.deploy_to="/home/ucgajhe/devel/TDA"
+env.run_at="/home/ccearal/Scratch/TDA/output"
+env.deploy_to="/home/ccearal/devel/TDA"
 env.clone_url="git@github.com:UCL/i_newspaper_rods.git"
-env.corpora="/home/ucgajhe/Scratch/TDA"
+env.corpora="/home/ccearal/Scratch/TDA"
 env.hosts=['legion.rc.ucl.ac.uk']
 env.machine='legion'
-env.user='ucgajhe'
+env.user='ccearal'
 
 modules = nested(prefix('module swap compilers compilers/gnu'),
      prefix('module swap mpi mpi/openmpi/1.10.1/gnu-4.9.2'),
@@ -25,28 +25,26 @@ def cold(branch='master'):
     run('mkdir -p '+env.deploy_to)
     run('mkdir -p '+env.run_at)
     with cd(env.deploy_to):
-        with modules:
-                 run('git clone '+env.clone_url)
-                 with cd('i_newspaper_rods'):
-                     run('git checkout '+branch)
-                     run('python setup.py develop --user')
-                     run('iinit')
-                     run('py.test')
+         run('git clone '+env.clone_url)
+         with cd('i_newspaper_rods'):
+             run('git checkout '+branch)
+             with modules:
+                 run('python setup.py develop --user')
+                 run('iinit')
+                 run('py.test')
 
 @task
 def warm(branch='master'):
-  with cd(os.path.join(env.deploy_to,'i_newspaper_rods')):
+    with cd(os.path.join(env.deploy_to,'i_newspaper_rods')):
         with modules:
-                 run('echo $PYTHONPATH')
-                 run('git checkout '+branch)
-                 run('git pull')
-                 run('python setup.py develop --user')
-
-
+            run('echo $PYTHONPATH')
+            run('git checkout '+branch)
+            run('git pull')
+            run('python setup.py develop --user')
 
 @task
 def test(branch='master'):
-  with cd(os.path.join(env.deploy_to,'i_newspaper_rods')):
+    with cd(os.path.join(env.deploy_to,'i_newspaper_rods')):
         with modules:
              run('iinit')
              run('py.test')

@@ -32,7 +32,7 @@ class Corpus(object):
         with open(path, 'w') as fdata:
             yaml.dump(self.store, fdata)
 
-    def loadingMap(self, mapper):
+    def loadingMap(self, mapper, search_for=None):
         def _map(issue):
             self.logger.debug("Loading issue")
             try:
@@ -44,7 +44,11 @@ class Corpus(object):
             self.logger.debug("Loaded issue")
             try:
                 self.logger.debug("Considering issue")
-                result= mapper(issue)
+                if search_for:
+                    self.logger.debug("Looking for word " + search_for)
+                    result = mapper(issue, search_for)
+                else:
+                    result = mapper(issue)
                 self.logger.debug("Considered issue")
                 return result
             except Exception as exception:

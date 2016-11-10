@@ -17,7 +17,7 @@ def main():
 
     perfLogger=logging.getLogger('performance')
 
-    perfLogger.setLevel(getattr(logging,args.loglevel.upper()))
+    perfLogger.setLevel(getattr(logging, args.loglevel.upper()))
     stdout=logging.StreamHandler()
     stdout.setFormatter(' %(levelname)s: %(asctime)s %(message)s')
     perfLogger.addHandler(stdout)
@@ -36,11 +36,14 @@ def main():
                                          # may define shuffler and reporter
     result = query(mapper, reducer, args.corpus_path,
                    args.downsample, args.fromfile,
-                   shuffler=shuffler, reporter=reporter)
+                   args.search_for, shuffler=shuffler, reporter=reporter)
 
     if result:
         if args.outpath:
-            outpath=args.outpath+'_'+str(MPI.COMM_WORLD.rank)+'.yml'
+            if args.search_for:
+                outpath = args.outpath + '_' + args.search_for + '_' + str(MPI.COMM_WORLD.rank) + '.yml'
+            else:
+                outpath = args.outpath + '_' + str(MPI.COMM_WORLD.rank) + '.yml'
             with open(outpath,'w') as result_file:
                 result_file.write(yaml.safe_dump(result))
                 perfLogger.info("Written result")
@@ -56,17 +59,18 @@ def clparser(commandline):
     clparser.add_argument('--loglevel', default='info', type=str, help = 'log level (debug, info, warn, error)')
     clparser.add_argument('--fromfile', action='store_true', help='read OIDs from file rather than query irods' )
     clparser.add_argument('--storeids', default=None, type=str, help = 'dump OIDs to file and exit')
+    clparser.add_argument('--search_for',type=str, default=None, help='optionally, find mentions of word')
     args=clparser.parse_args(commandline)
     return args
 
 def query(mapper, reducer, corpus_path, downsample=1, fromfile=False,
-          shuffler=None, reporter=None):
+          search_for=None, shuffler=None, reporter=None):
     from mpi4py import MPI
     communicator=MPI.COMM_WORLD
     perfLogger=logging.getLogger('performance')
     corpus=Corpus(corpus_path,fromfile)
     perfLogger.info("Constructed")
-    harness = MapReduce(corpus.loadingMap(mapper), reducer,
+    harness = MapReduce(corpus.loadingMap(mapper, search_for), reducer,
                 communicator, downsample, shuffler=shuffler)
     result = harness.execute(corpus)
 
