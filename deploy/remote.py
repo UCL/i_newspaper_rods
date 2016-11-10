@@ -50,21 +50,22 @@ def test(branch='master'):
              run('py.test')
 
 @task
-def sub(query, corpus='output/saved_ids.yml',
+def sub(query, corpus='output/saved_ids.yml', search_for=None,
         subsample=1, processes=48, wall='1:0:0'):
-    env.processes=processes
-    env.subsample=subsample
-    env.corpus=os.path.join(env.corpora,corpus)
-    env.wall=wall
+    env.processes = processes
+    env.subsample = subsample
+    env.corpus = os.path.join(env.corpora,corpus)
+    env.wall = wall
+    env.search_for = search_for
     now=datetime.now()
     stamp=now.strftime("%Y%m%d_%H%M")
-    env.outpath=query+'_'+stamp
-    template_file_path=os.path.join(os.path.dirname(__file__),env.machine+'.sh.mko')
-    script_local_path=os.path.join(os.path.dirname(__file__),env.machine+'.sh')
-    config_file_path=os.path.join(os.path.dirname(os.path.dirname(__file__)),'queries',query+'.py')
-    env.dest_query='query_'+stamp+'.py'
+    env.outpath = query+'_'+stamp
+    template_file_path = os.path.join(os.path.dirname(__file__),env.machine+'.sh.mko')
+    script_local_path = os.path.join(os.path.dirname(__file__),env.machine+'.sh')
+    config_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),'queries',query+'.py')
+    env.dest_query = 'query_'+stamp+'.py'
     with open(template_file_path) as template:
-        script=Template(template.read()).render(**env)
+        script = Template(template.read()).render(**env)
         with open(script_local_path,'w') as script_file:
             script_file.write(script)
     with cd(env.run_at):

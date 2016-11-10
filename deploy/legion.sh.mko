@@ -12,9 +12,9 @@ module swap compilers compilers/gnu
 module swap mpi mpi/openmpi/1.10.1/gnu-4.9.2
 module load python2/recommended
 module load icommands
-%if subsample:
-gerun /home/${user}/.python2local/bin/newsrods ${dest_query} ${corpus} --fromfile --downsample ${subsample} --outpath ${outpath}
+%if search_for:
+gerun /home/${user}/.python2local/bin/newsrods ${dest_query} ${corpus} --fromfile --downsample ${subsample} --outpath ${outpath} --search_for ${search_for}
 
 %else:
-gerun /home/${user}/.python2local/bin/newsrods ${dest_query} ${corpus} --fromfile --outpath ${outpath}
+gerun /home/${user}/.python2local/bin/newsrods ${dest_query} ${corpus} --fromfile --downsample ${subsample} --outpath ${outpath}
 %endif
