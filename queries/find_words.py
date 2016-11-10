@@ -98,18 +98,12 @@ interesting_ngrams=[
             ['East','Indies']
 ]
 
-from ucl_irods_spark import Corpus, Issue
+from newsrods.issue import Issue
+from newsrods.sparkrods import get_streams
 
-oids = map(lambda x: x.strip(), list(open('oids.txt')))
+streams = get_streams(downsample = 1024)
 
-rddoids = sc.parallelize(oids)
-down = rddoids.sample(False, 1.0 / 1024 )
-
-streams = down.map(lambda x:
-                   requests.get('http://arthur.rd.ucl.ac.uk/objects/'+x,
-                   stream=True))
-
-issues = down.map(streams)
+issues = streams.map(Issue)
 
 articles = issues.flatMap(lambda x: [(x.date.year, article) for article in x.articles])
 interest = articles.flatMap(lambda x: [((x[0], y), 1) for y in interesting_words if y in x[1].words])

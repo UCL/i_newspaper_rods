@@ -10,6 +10,23 @@ env.machine='legion'
 env.user='ucgajhe'
 
 @task
+def prepare():
+    execute(dependencies)
+    execute(install)
+    execute(storeids)
+
+@task
+def install():
+    run('mkdir -p '+env.deploy_to)
+    with cd(env.deploy_to):
+        put(env.model,'.')
+        put('setup.py', 'setup.py')
+        put('README.md', 'README.md')
+        with prefix('module load python2/recommended'):
+            run('python setup.py develop --user')
+            run('py.test')
+
+@task
 def sub(query, subsample=1, processes=12, wall='0:15:0'):
     env.processes=processes
     env.subsample=subsample
@@ -31,7 +48,6 @@ def sub(query, subsample=1, processes=12, wall='0:15:0'):
 
     run('mkdir -p '+env.run_at)
     with cd(env.run_at):
-       put(env.model, '.')
        put(query, 'query.py')
        put('query.sh','query.sh')
        run('cp ../oids.txt .')
@@ -40,12 +56,12 @@ def sub(query, subsample=1, processes=12, wall='0:15:0'):
 @task
 def storeids():
     run('mkdir -p '+env.results_dir)
-    with cd(env.run_at):
+    with cd(env.results_dir):
        with prefix('module load icommands'):
            run('iinit')
            run('iquest --no-page "%s" '+
            '"SELECT DATA_PATH where COLL_NAME like '+
-           "'"+env.corpus+"'"+
+           "'"+env.corpus+"%'"+
            " and DATA_NAME like '%-%.xml' "+
            " and DATA_RESC_HIER = 'wos;wosArchive'"+'" >oids.txt')
 
@@ -61,7 +77,7 @@ def fetch():
 
 @task
 def dependencies():
-    with modules:
+    with prefix('module load python2/recommended'):
         run("pip install --user lxml")
         run("pip install --user pyyaml")
         run("pip install --user pytest")

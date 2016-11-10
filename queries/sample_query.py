@@ -1,19 +1,9 @@
 from newsrods.issue import Issue
+from newsrods.sparkrods import get_streams
 
 import yaml
-import pyspark
 
-sc = pyspark.SparkContext(appName="sample_query")
-
-oids = map(lambda x: x.strip(), list(open('oids.txt')))
-
-rddoids = sc.parallelize(oids)
-down = rddoids.sample(False, 1.0 / 1024 )
-
-streams = down.map(lambda x:
-                   requests.get('http://arthur.rd.ucl.ac.uk/objects/'+x,
-                   stream=True))
-                   
+streams = get_streams(downsample = 1024)
 issues = streams.map(Issue)
 articles = issues.flatMap(lambda x: x.articles)
 disraelis = articles.filter(lambda x: "Disraeli" in x.words)
