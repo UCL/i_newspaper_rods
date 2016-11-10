@@ -98,11 +98,25 @@ interesting_ngrams=[
             ['East','Indies']
 ]
 
-def q(issues, sc):
-    # Ignoring 2-grams for now while trying out spark
-    articles = issues.flatMap(lambda x: [(x.date.year, article) for article in x.articles])
-    interest = articles.flatMap(lambda x: [((x[0], y), 1) for y in interesting_words if y in x[1].words])
-    interesting_by_year = interest.reduceByKey(lambda x,y: x+y).map(
-        lambda x: (x[0][0], (x[0][1], x[1]))
-        ).groupByKey().map(lambda x: (x[0],list(x[1]))).collect()
-    return dict(interesting_by_year)
+from ucl_irods_spark import Corpus, Issue
+
+oids = map(lambda x: x.strip(), list(open('oids.txt')))
+
+rddoids = sc.parallelize(oids)
+down = rddoids.sample(False, 1.0 / 1024 )
+
+streams = down.map(lambda x:
+                   requests.get('http://arthur.rd.ucl.ac.uk/objects/'+x,
+                   stream=True))
+
+issues = down.map(streams)
+
+articles = issues.flatMap(lambda x: [(x.date.year, article) for article in x.articles])
+interest = articles.flatMap(lambda x: [((x[0], y), 1) for y in interesting_words if y in x[1].words])
+interesting_by_year = interest.reduceByKey(lambda x,y: x+y).map(
+    lambda x: (x[0][0], (x[0][1], x[1]))
+    ).groupByKey().map(lambda x: (x[0],list(x[1]))).collect()
+
+import yaml
+with open('result.yml','w') as result_file:
+    result_file.write(yaml.safe_dump(dict(interesting_by_year)))
