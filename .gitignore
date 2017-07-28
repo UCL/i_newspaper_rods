@@ -92,3 +92,10 @@ ENV/
 
 # Test data (DTD schema and save IDs' yaml)
 data/
+
+# IDE / Editor files
+*~
+.vscode/
+*#
+*.swp
+*swo
