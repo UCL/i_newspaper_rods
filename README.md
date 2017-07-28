@@ -4,7 +4,13 @@ Working with iRods to analyse the Times Digital Archive
 # Testing Locally
 
 Any query can be tested on your local machine, using a tiny subset of the total 
-file archive. This is acheived using: `fab test_setup test:query=YOUR_QUERY`.
+file archive. This is acheived using: 
+
+ * On OS X: `fab --set DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH test_setup`
+ * Otherwise: `fab test_setup test:query=YOUR_QUERY`
+
+Note that the `DYLD_LIBRARY_PATH` must be provided explicitly on OS X as 
+it cannot be passed to sub shells automatically due to System Integrity Protection (SIP).
 
 # Running
 

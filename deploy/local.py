@@ -4,34 +4,28 @@ Set up to run locally. This is designed to be used for testing
 
 import os
 from datetime import datetime
-from fabric.api import task, env, execute, run, put, cd, prefix, lcd, local
+from fabric.api import task, env, execute, run, put, cd, lcd, local
 from mako.template import Template
 
 
 @task
-def test_setup():
+def test_setup(number_oid=5):
     '''
     Prepare instance for running. Generates necessary files and installs
     packages
     '''
     execute(dependencies)
     execute(install)
-    execute(storeids)
+    execute(storeids, number=number_oid)
 
 
 @task
 def install():
     '''
-    Run the python setuptools code
+    Run the tests
     '''
-    local('mkdir -p ' + env.deploy_to)
-    with lcd(env.deploy_to):
-        put(env.model, '.')
-        put('setup.py', 'setup.py')
-        put('README.md', 'README.md')
-        with prefix('module load python2/recommended'):
-            run('python setup.py develop --user')
-            run('py.test')
+    env.results_dir = 'results'
+    local('py.test')
 
 
 @task
@@ -66,19 +60,26 @@ def test(query, subsample=1, processes=12, wall='0:15:0'):
 
 
 @task
-def storeids():
+def storeids(number=5):
     '''
-    Get the oids for the archive
+    Get the oids for the archive. However, since this is just a local
+    test which is unable to process large amounts of files, save only
+    a small subset.
     '''
-    run('mkdir -p ' + env.results_dir)
-    with cd(env.results_dir):
-        with prefix('module load icommands'):
-            run('iinit')
-            run('iquest --no-page "%s" ' +
-                '"SELECT DATA_PATH where COLL_NAME like ' +
-                "'" + env.corpus + "%'" +
-                " and DATA_NAME like '%-%.xml' " +
-                " and DATA_RESC_HIER = 'wos;wosArchive'" + '" >oids.txt')
+    local('mkdir -p ' + env.results_dir)
+    lib_path = "''"
+    try:
+        lib_path = env.DYLD_LIBRARY_PATH
+    except KeyError:
+        pass
+    with lcd(env.results_dir):
+        local('DYLD_LIBRARY_PATH=' + lib_path + ' iinit', shell='/bin/bash')
+        local('DYLD_LIBRARY_PATH=' + lib_path + ' iquest --no-page "%s" ' +
+              '"SELECT DATA_PATH where COLL_NAME like ' +
+              "'" + env.corpus + "%'" +
+              " and DATA_NAME like '%-%.xml' " +
+              " and DATA_RESC_HIER = 'wos;wosArchive'" + '" | head -n ' +
+              str(number) + ' > oids.txt', shell='/bin/bash')
 
 
 @task
@@ -86,4 +87,4 @@ def dependencies():
     '''
     Install the dependencies
     '''
-    local('. venv/bin/activate && pip install lxml pyyaml pytest')
+    local('. venv/bin/activate && pip install lxml pyyaml pytest requests')

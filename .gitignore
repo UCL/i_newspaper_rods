@@ -92,6 +92,7 @@ ENV/
 
 # Test data (DTD schema and save IDs' yaml)
 data/
+results/
 
 # IDE / Editor files
 *~
