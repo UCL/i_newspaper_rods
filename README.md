@@ -1,21 +1,26 @@
 # i_newspaper_rods
 Working with iRods to analyse the Times Digital Archive
 
+# Testing Locally
+
+Any query can be tested on your local machine, using a tiny subset of the total 
+file archive. This is acheived using: `fab test_setup test:query=YOUR_QUERY`.
+
 # Running
 
 You can run the program to run with
- * Legion: `fab prepare sub(query=your_query)`
- * Grace: `fab grace prepare sub(query=your_query)`
+ * Legion: `fab legion:username=YOUR_UCL_USER_ID prepare sub:query=YOUR_QUERY`
+ * Grace: `fab grace:username=YOUR_UCL_USER_ID prepare sub:query=YOUR_QUERY`
 
 You can see the status of your jobs with
 
-* Legion: `fab stat`
-* Grace: `fab grace stat`
+* Legion: `fab legion:username=YOUR_UCL_USER_ID stat`
+* Grace: `fab grace:username=YOUR_UCL_USER_ID stat`
 
 And retreive the results of your query with
 
-* Legion: `fab fetch`
-* Grace: `fab grace fetch`
+* Legion: `fab legion:username=YOUR_UCL_USER_ID fetch`
+* Grace: `fab grace:username=YOUR_UCL_USER_ID fetch`
 
 
 # Running iRODS iCommands locally on OS X Sierra

@@ -1,15 +1,15 @@
 '''
-Set up to run on Legion
+Set up to run locally. This is designed to be used for testing
 '''
 
 import os
 from datetime import datetime
-from fabric.api import task, env, execute, run, put, cd, prefix, lcd, get
+from fabric.api import task, env, execute, run, put, cd, prefix, lcd, local
 from mako.template import Template
 
 
 @task
-def prepare():
+def test_setup():
     '''
     Prepare instance for running. Generates necessary files and installs
     packages
@@ -20,23 +20,12 @@ def prepare():
 
 
 @task
-def set_vars(username):
-    '''
-    Declare the variables for where to store things on the cluster nodes
-    '''
-    env.user = username
-    env.results_dir = "/home/" + username + "/Scratch/TDASpark2/output"
-    env.deploy_to = "/home/" + username + "/devel/TDA"
-    env.clone_url = "git@github.com:UCL/i_newspaper_rods.git"
-
-
-@task
 def install():
     '''
     Run the python setuptools code
     '''
-    run('mkdir -p ' + env.deploy_to)
-    with cd(env.deploy_to):
+    local('mkdir -p ' + env.deploy_to)
+    with lcd(env.deploy_to):
         put(env.model, '.')
         put('setup.py', 'setup.py')
         put('README.md', 'README.md')
@@ -46,7 +35,7 @@ def install():
 
 
 @task
-def sub(query, subsample=1, processes=12, wall='0:15:0'):
+def test(query, subsample=1, processes=12, wall='0:15:0'):
     '''
     Submit task to the HPC job queue
     '''
@@ -93,30 +82,8 @@ def storeids():
 
 
 @task
-def stat():
-    '''
-    Get the status of the HPC queues
-    '''
-    run('qstat')
-
-
-@task
-def fetch():
-    '''
-    Copy the results back from the cluster
-    '''
-    with lcd(os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                          'results')):
-        with cd(env.run_at):
-            get('*')
-
-
-@task
 def dependencies():
     '''
     Install the dependencies
     '''
-    with prefix('module load python2/recommended'):
-        run("pip install --user lxml")
-        run("pip install --user pyyaml")
-        run("pip install --user pytest")
+    local('. venv/bin/activate && pip install lxml pyyaml pytest')
