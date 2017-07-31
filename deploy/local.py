@@ -29,29 +29,11 @@ def install():
 
 
 @task
-def test(query, subsample=1, processes=12, wall='0:15:0'):
+def test(query):
     '''
-    Submit task to the HPC job queue
+    Run the query on the sub set of files
     '''
-    env.processes = processes
-    env.subsample = subsample
-
-    env.wall = wall
-    now = datetime.now()
-    stamp = now.strftime("%Y%m%d_%H%M")
-    outpath = os.path.basename(query).replace('.py', '') + '_' + stamp
-
-    template_file_path = os.path.join(os.path.dirname(__file__),
-                                      env.machine + '.sh.mko')
-
-    env.run_at = env.results_dir + '/' + outpath
-
-    with open(template_file_path) as template:
-        script = Template(template.read()).render(**env)
-        with open('query.sh', 'w') as script_file:
-            script_file.write(script)
-
-    run('mkdir -p ' + env.run_at)
+    local('mkdir -p ' + env.results_dir)
     with cd(env.run_at):
         put(query, 'query.py')
         put('query.sh', 'query.sh')

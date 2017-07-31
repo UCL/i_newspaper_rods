@@ -90,6 +90,9 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# Local Spark Testing
+metastore_db/
+
 # Test data (DTD schema and save IDs' yaml)
 data/
 results/

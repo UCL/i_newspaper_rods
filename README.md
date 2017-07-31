@@ -63,6 +63,7 @@ You also must add the following lines to your `~/.bash_profile`
 ```bash
 # iRods iCommands setup
 export PATH=/Applications/iRODS.app/Contents/PlugIns/irods/icommands:$PATH
+# This is not a real export due to SIP on OS X 
 export DYLD_LIBRARY_PATH=/Applications/iRODS.app/Contents/Frameworks:$DYLD_LIBRARY_PATH
 ```
 
