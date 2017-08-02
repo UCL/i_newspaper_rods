@@ -21,9 +21,8 @@ def install(query, datafile):
     '''
     Run the tests
     '''
-    env.results_dir = 'results'
-    local('mkdir -p ' + env.results_dir)
-    with lcd(env.results_dir):  # pylint: disable=not-context-manager
+    local('mkdir -p ' + env.local_deploy_dir)
+    with lcd(env.local_deploy_dir):  # pylint: disable=not-context-manager
         local('cp -r ../newsrods .')
         local('cp ../' + query + ' ./newsrods/query.py')
         local('cp ../' + datafile + ' .')
@@ -34,7 +33,7 @@ def test():
     '''
     Run the query on the sub set of files
     '''
-    with lcd(env.results_dir):  # pylint: disable=not-context-manager
+    with lcd(env.local_deploy_dir):  # pylint: disable=not-context-manager
         local('pyspark < newsrods/local_runner.py')
 
 
@@ -47,15 +46,15 @@ def storeids(number):
 
     If the number is less than 1 return the full set
     '''
-    head_command = ''""''
-    if number > 0:
+    head_command = ''
+    if int(number) > 0:
         head_command = ' | head -n ' + str(number)
     lib_path = "''"
     try:
         lib_path = env.DYLD_LIBRARY_PATH
     except KeyError:
         pass
-    with lcd(env.results_dir):  # pylint: disable=not-context-manager
+    with lcd(env.local_deploy_dir):  # pylint: disable=not-context-manager
         local('DYLD_LIBRARY_PATH=' + lib_path + ' iinit', shell='/bin/bash')
         local('DYLD_LIBRARY_PATH=' + lib_path + ' iquest --no-page "%s" ' +
               '"SELECT DATA_PATH where COLL_NAME like ' +
