@@ -16,7 +16,7 @@ def main():
     '''
     sleep(10)
     issues = get_streams(sc)  # noqa # pylint: disable=undefined-name
-    result = do_query(issues, '../query_args/interesting_gender_words.txt')
+    result = do_query(issues, 'interesting_gender_words.txt')
     with open('result.yml', 'w') as result_file:
         result_file.write(safe_dump(dict(result)))
 

@@ -16,7 +16,7 @@ def main():
 
     context = SparkContext(appName="iNewspaperRods")
     issues = get_streams(context)
-    results = do_query(issues, '../query_args/interesting_gender_words.txt')
+    results = do_query(issues, 'interesting_gender_words.txt')
 
     with open('result.yml', 'w') as result_file:
         result_file.write(yaml.safe_dump(dict(results)))

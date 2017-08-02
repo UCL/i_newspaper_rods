@@ -9,7 +9,7 @@
 #$ -ac allow="U"
 #$ -ac exclusive
 #$ -wd ${run_at}
-s
+
 module load python2/recommended
 module load icommands
 module load rsd-modules

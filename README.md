@@ -6,8 +6,8 @@ Working with iRods to analyse the Times Digital Archive
 Any query can be tested on your local machine, using a tiny subset of the total 
 file archive. This is acheived using: 
 
- * On OS X: `fab --set DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH test_setup`
- * Otherwise: `fab test_setup test:query=YOUR_QUERY`
+ * On OS X: `fab --set DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH setup:query=queries/find_words.py,datafile=query_args/interesting_gender_words.txt,number_oid=5 test`
+ * Otherwise: `fab setup:query=queries/find_words.py,datafile=query_args/interesting_gender_words.txt,number_oid=5 test`
 
 Note that the `DYLD_LIBRARY_PATH` must be provided explicitly on OS X as 
 it cannot be passed to sub shells automatically due to System Integrity Protection (SIP).
