@@ -2,10 +2,7 @@
 Set up to run locally. This is designed to be used for testing
 '''
 
-import os
-from datetime import datetime
-from fabric.api import task, env, execute, run, put, cd, lcd, local
-from mako.template import Template
+from fabric.api import task, env, execute, lcd, local
 
 
 @task
@@ -33,12 +30,10 @@ def test(query):
     '''
     Run the query on the sub set of files
     '''
-    local('mkdir -p ' + env.results_dir)
-    with cd(env.run_at):
-        put(query, 'query.py')
-        put('query.sh', 'query.sh')
-        run('cp ../oids.txt .')
-        run('qsub query.sh')
+    with lcd(env.results_dir):  # pylint: disable=not-context-manager
+        local('cp -r ../newsrods .')
+        local('cp ../' + query + ' ./newsrods/query.py')
+        local('pyspark < newsrods/local_runner.py')
 
 
 @task
@@ -54,7 +49,7 @@ def storeids(number=5):
         lib_path = env.DYLD_LIBRARY_PATH
     except KeyError:
         pass
-    with lcd(env.results_dir):
+    with lcd(env.results_dir):  # pylint: disable=not-context-manager
         local('DYLD_LIBRARY_PATH=' + lib_path + ' iinit', shell='/bin/bash')
         local('DYLD_LIBRARY_PATH=' + lib_path + ' iquest --no-page "%s" ' +
               '"SELECT DATA_PATH where COLL_NAME like ' +
@@ -69,4 +64,4 @@ def dependencies():
     '''
     Install the dependencies
     '''
-    local('. venv/bin/activate && pip install lxml pyyaml pytest requests')
+    local('. venv/bin/activate && pip install lxml pyyaml pytest psutil')

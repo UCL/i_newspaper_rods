@@ -2,23 +2,21 @@
 Module to load and read the files using spark
 '''
 
-import pyspark
-import requests
+from newsrods.issue import Issue
+
+DATA_STORE_URL = "utilities.rd.ucl.ac.uk"
 
 
-def get_streams(downsample=1, source="oids.txt", app="iRodsSpark"):
+def get_streams(context, downsample=1, source="oids.txt"):
     '''
-    Turn a list of oids in a file into a RDD of files
+    Turn a list of oids in a file into a RDD of Issues
     '''
-
-    context = pyspark.SparkContext(appName=app)
-
-    oids = map(lambda x: x.strip(), list(open(source)))
+    oids = [oid.strip() for oid in list(open(source))]
 
     rddoids = context.parallelize(oids)
-    down = rddoids.sample(False, 1.0 / downsample)
+    if downsample < 1:
+        rddoids = rddoids.sample(False, 1.0 / downsample)
 
-    streams = down.map(lambda x:
-                       requests.get('http://arthur.rd.ucl.ac.uk/objects/'+x,
-                                    stream=True).raw)
-    return streams
+    issues = rddoids.map(lambda oid: 'http://' + DATA_STORE_URL +
+                         '/objects/' + oid).map(Issue)
+    return issues

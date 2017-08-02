@@ -36,10 +36,11 @@ def install():
     Run the python setuptools code
     '''
     run('mkdir -p ' + env.deploy_to)
-    with cd(env.deploy_to):
+    with cd(env.deploy_to):  # pylint: disable=not-context-manager
         put(env.model, '.')
         put('setup.py', 'setup.py')
         put('README.md', 'README.md')
+        # pylint: disable=not-context-manager
         with prefix('module load python2/recommended'):
             run('python setup.py develop --user')
             run('py.test')
@@ -69,7 +70,7 @@ def sub(query, subsample=1, processes=12, wall='0:15:0'):
             script_file.write(script)
 
     run('mkdir -p ' + env.run_at)
-    with cd(env.run_at):
+    with cd(env.run_at):  # pylint: disable=not-context-manager
         put(query, 'query.py')
         put('query.sh', 'query.sh')
         run('cp ../oids.txt .')
@@ -82,7 +83,9 @@ def storeids():
     Get the oids for the archive
     '''
     run('mkdir -p ' + env.results_dir)
+    # pylint: disable=not-context-manager
     with cd(env.results_dir):
+        # pylint: disable=not-context-manager
         with prefix('module load icommands'):
             run('iinit')
             run('iquest --no-page "%s" ' +
@@ -105,9 +108,10 @@ def fetch():
     '''
     Copy the results back from the cluster
     '''
+    # pylint: disable=not-context-manager
     with lcd(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                           'results')):
-        with cd(env.run_at):
+        with cd(env.run_at):  # pylint: disable=not-context-manager
             get('*')
 
 
@@ -116,7 +120,6 @@ def dependencies():
     '''
     Install the dependencies
     '''
+    # pylint: disable=not-context-manager
     with prefix('module load python2/recommended'):
-        run("pip install --user lxml")
-        run("pip install --user pyyaml")
-        run("pip install --user pytest")
+        run("pip install --user lxml pyyaml pytest psutil")

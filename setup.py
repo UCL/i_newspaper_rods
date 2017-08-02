@@ -29,10 +29,5 @@ setup(
         "Development Status :: 2 - Pre-Alpha",
         "Topic :: Research :: Humanities",
         "License :: OSI Approved :: MIT License",
-    ],
-    entry_points={
-        'console_scripts': [
-            'newsrods = newsrods.harness.query:main',
-        ]
-    },
+    ]
 )

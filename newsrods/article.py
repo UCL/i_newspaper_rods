@@ -1,16 +1,31 @@
-from lxml import etree
+'''
+Module for articles, many of which make up an issue
+'''
+
+from logging import getLogger
+
 
 class Article(object):
+    '''
+    Class to represent an article in an issue of an newspaper
+    '''
     def __init__(self, source):
+        '''
+        Create the article from source XML
+        '''
+        self.logger = getLogger('py4j')
         self.tree = source
         # DTD says only one text element per article
-        # Texts can have different children: preamble, title and cr. Each of those
-        # is formed by pg (position guide) and p (paragraph) elements. Paras are
-        # made of words (wd).
+        # Texts can have different children: preamble, title and cr. Each of 
+        # those is formed by pg (position guide) and p (paragraph) elements. 
+        # Paras are  made of words (wd).
         self.title = self.tree.xpath('text/text.title/p/wd/text()')
         self.preamble = self.tree.xpath('text/text.preamble/p/wd/text()')
         self.content = self.tree.xpath('text/text.cr/p/wd/text()')
 
     @property
     def words(self):
+        '''
+        Get the full text of the article, title etc.abs
+        '''
         return self.title + self.preamble + self.content
