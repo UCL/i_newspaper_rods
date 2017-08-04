@@ -14,4 +14,4 @@ module load python2/recommended
 module load rsd-modules
 module load spark
 
-sparkrun newsrods/remote_runner.py
+sparkrun --py-files news.zip newsrods/remote_runner.py
