@@ -32,14 +32,17 @@ class Issue(object):
             self.day_of_week = ''
             return
         except error:
-            self.logger.error("Something terrible happened: %s", error)
-            self.tree = None
-            self.issue = ''
-            self.articles = []
-            self.date = datetime.now()
-            self.page_count = 0
-            self.day_of_week = ''
-            return
+            try:
+                self.tree = etree.parse(stream, parser)
+            except:
+                self.logger.error("Something terrible happened: %s", error)
+                self.tree = None
+                self.issue = ''
+                self.articles = []
+                self.date = datetime.now()
+                self.page_count = 0
+                self.day_of_week = ''
+                return
         # DTD says there's only one issue element
         # Note there are two different DTDs:
         # GALENP: /GALENP/*/issue/page/article/text/*/p/wd
