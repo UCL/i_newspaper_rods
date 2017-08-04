@@ -25,6 +25,9 @@ class Issue(object):
             self.logger.error("Error when parsing %s: %s", error.code,
                               error.msg)
             self.tree = None
+        except error:
+            self.logger.error("Something terrible happened: %s", error)
+            self.tree = None
         # DTD says there's only one issue element
         # Note there are two different DTDs:
         # GALENP: /GALENP/*/issue/page/article/text/*/p/wd
