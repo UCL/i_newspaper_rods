@@ -69,8 +69,8 @@ def dependencies():
     '''
     Install the dependencies
     '''
-    local('. venv/bin/activate && pip install lxml pyyaml pytest" + \
-          " psutil requests')
+    local('. venv/bin/activate && pip install lxml pyyaml pytest' +
+          ' psutil requests')
 
 
 @task
