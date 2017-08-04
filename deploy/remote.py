@@ -42,6 +42,7 @@ def install():
         put(env.local_deploy_dir + '/*', '.')
         put('setup.py', 'setup.py')
         put('README.md', 'README.md')
+        run('zip -r news.zip newsrods')
 
 
 @task
