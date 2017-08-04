@@ -93,5 +93,5 @@ def dependencies():
     '''
     # pylint: disable=not-context-manager
     with prefix('module load python2/recommended'):
-        run("pip install --user lxml pyyaml pytest psutil")
+        run("pip install --user lxml pyyaml pytest psutil requests")
         run('py.test')
