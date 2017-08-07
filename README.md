@@ -15,7 +15,7 @@ it cannot be passed to sub shells automatically due to System Integrity Protecti
 # Running
 
 You can run the program to run with
- * Legion: `fab legion:username=YOUR_UCL_USER_ID prepare sub:query=YOUR_QUERY`
+ * Legion: `fab --set DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH setup:query=queries/find_words.py,datafile=query_args/interesting_gender_words.txt,number_oid=50 legion:username=ccearkl prepare sub`
  * Grace: `fab grace:username=YOUR_UCL_USER_ID prepare sub:query=YOUR_QUERY`
 
 You can see the status of your jobs with
