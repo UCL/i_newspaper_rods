@@ -27,6 +27,7 @@ def install(query, datafile):
         local('cp ../' + query + ' ./newsrods/query.py')
         local('cp ../' + datafile + ' .')
         local('find . -iname "*.pyc" -delete')
+        local('find . -iname "__pycache__" -delete')
 
 
 @task
