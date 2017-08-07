@@ -33,40 +33,37 @@ def set_vars(username):
 
 
 @task
-def install():
+def install(processes=12, wall='2:0:0'):
     '''
     Run the python setuptools code
-    '''
-    run('mkdir -p ' + env.run_at)
-    with cd(env.run_at):  # pylint: disable=not-context-manager
-        put(env.local_deploy_dir + '/*', '.')
-        put('setup.py', 'setup.py')
-        put('README.md', 'README.md')
-        put('deploy/sparkrun', 'sparkrun')
-        put('deploy/*.sh', '.')
-        run('zip -r news.zip newsrods')
-
-
-@task
-def sub(processes=12, wall='2:0:0'):
-    '''
-    Submit task to the HPC job queue
     '''
     env.processes = processes
     env.wall = wall
 
+    # Generate script for qsub
     template_file_path = os.path.join(os.path.dirname(__file__),
                                       env.machine + '.sh.mko')
 
-    with lcd(env.local_deploy_dir):  # pylint: disable=not-context-manager
-        with open(template_file_path) as template:
-            script = Template(template.read()).render(**env)
-            with open('query.sh', 'w') as script_file:
-                script_file.write(script)
+    with open(template_file_path) as template:
+        script = Template(template.read()).render(**env)
+        with open(env.local_deploy_dir + '/query.sh', 'w') as script_file:
+            script_file.write(script)
 
-        with cd(env.run_at):  # pylint: disable=not-context-manager
-            put('query.sh', 'query.sh')
-            run('qsub query.sh')
+    run('mkdir -p ' + env.run_at)
+    with cd(env.run_at):  # pylint: disable=not-context-manager
+        put(env.local_deploy_dir + '/*', '.')
+        put('deploy/sparkrun', 'sparkrun', mode=0766)
+        put('deploy/*.sh', '.', mode=0766)
+        run('zip -r news.zip newsrods')
+
+
+@task
+def sub():
+    '''
+    Submit task to the HPC job queue
+    '''
+    with cd(env.run_at):  # pylint: disable=not-context-manager
+        run('qsub query.sh')
 
 
 @task
