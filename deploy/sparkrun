@@ -23,6 +23,9 @@ sparkmaster="spark://${nodes[0]}:7077"
 
 
 master_log_file="${LOG_DIR}/spark-${USER}-org.apache.spark.deploy.master.Master-1-${HOSTNAME}.out"
+
+echo "Estimated log for master is ${master_log_file}"
+
 # Wait for the master to actually start
 tail -f "${master_log_file}" | while read LOGLINE
 do
