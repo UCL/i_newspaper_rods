@@ -4,7 +4,10 @@
 
 # Make a per-job output directory
 OUTPUT_DIR="$(pwd)/run.${JOB_ID}"
+LOG_DIR="/home/${USER}/Scratch/sparklogs/run.${JOB_ID}"
+
 mkdir -p "$OUTPUT_DIR"
+mkdir -p "$LOG_DIR"
 
 INIT="source /shared/ucl/apps/modules/3.2.6/Modules/3.2.6/init/bash; module load java; export SPARK_LOG_DIR=\"$OUTPUT_DIR\" "
 
@@ -19,7 +22,7 @@ mpirun -np 1 -host "${nodes[0]}" ./startMaster.sh &
 sparkmaster="spark://${nodes[0]}:7077"
 
 
-master_log_file="/home/${USER}/Scratch/sparklogs/run.${JOB_ID}/spark-${USER}-org.apache.spark.deploy.master.Master-1-${HOSTNAME}.out"
+master_log_file="${LOG_DIR}/spark-${USER}-org.apache.spark.deploy.master.Master-1-${HOSTNAME}.out"
 # Wait for the master to actually start
 tail -f "${master_log_file}" | while read LOGLINE
 do
