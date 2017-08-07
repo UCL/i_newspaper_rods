@@ -47,4 +47,3 @@ do
 done  
 
 mpirun -np 1 -host "${nodes[0]}" ./stopMaster.sh
-wait
