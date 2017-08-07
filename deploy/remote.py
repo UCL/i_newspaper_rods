@@ -33,7 +33,7 @@ def set_vars(username):
 
 
 @task
-def install(processes=12, wall='2:0:0'):
+def install(processes=12, wall='30:0:0'):
     '''
     Run the python setuptools code
     '''
