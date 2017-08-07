@@ -1,0 +1,50 @@
+# A gerun-inspired wrapper for running spark jobs on UCL Clusters
+# Mostly based on a script by Jonathan Dursi
+# from this post: http://www.dursi.ca/spark-in-hpc-clusters/
+
+# Make a per-job output directory
+OUTPUT_DIR="$(pwd)/run.${JOB_ID}"
+mkdir -p "$OUTPUT_DIR"
+
+INIT="source /shared/ucl/apps/modules/3.2.6/Modules/3.2.6/init/bash; module load java; export SPARK_LOG_DIR=\"$OUTPUT_DIR\" "
+
+# Get our list of allocated nodes and how many
+nodes=($( sort -u <"$TMPDIR/machines" | sed -e 's/$/.data.legion.ucl.ac.uk/' ))
+nnodes=${#nodes[@]}  
+last=$(( nnodes - 1 ))
+
+export SPARK_LOCAL_DIRS="$TMPDIR"
+
+mpirun -np 1 -host "${nodes[0]}" ./startMaster.sh &
+sparkmaster="spark://${nodes[0]}:7077"
+
+
+master_log_file="/home/${USER}/Scratch/sparklogs/run.${JOB_ID}/spark-${USER}-org.apache.spark.deploy.master.Master-1-${HOSTNAME}.out"
+# Wait for the master to actually start
+tail -f "${master_log_file}" | while read LOGLINE
+do
+   [[ "${LOGLINE}" == *"New state: ALIVE"* ]] && pkill -P $$ tail
+done
+
+# Start the spark workers on all nodes
+for i in $( seq 0 $last )  
+do
+	mpirun -np 1 -host "${nodes[$i]}" ./startSlave.sh ${sparkmaster} &
+done
+
+# Submit the script to the Spark cluster
+echo "STARTING PROCESS"
+date
+spark-submit --master "${sparkmaster}" "$@"
+
+echo "ENDING PROCESS"
+date
+
+# Stop the Spark master and kill all the Spark processes to clean up
+for i in $( seq 0 $last )  
+do  
+	mpirun -np 1 -host "${nodes[$i]}" ./stopSlave.sh
+done  
+
+mpirun -np 1 -host "${nodes[0]}" ./stopMaster.sh
+wait

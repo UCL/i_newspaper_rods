@@ -42,11 +42,13 @@ def install():
         put(env.local_deploy_dir + '/*', '.')
         put('setup.py', 'setup.py')
         put('README.md', 'README.md')
+        put('deploy/sparkrun', 'sparkrun')
+        put('deploy/*.sh', '.')
         run('zip -r news.zip newsrods')
 
 
 @task
-def sub(processes=12, wall='0:15:0'):
+def sub(processes=12, wall='2:0:0'):
     '''
     Submit task to the HPC job queue
     '''

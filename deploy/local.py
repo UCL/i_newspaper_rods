@@ -26,6 +26,7 @@ def install(query, datafile):
         local('cp -r ../newsrods .')
         local('cp ../' + query + ' ./newsrods/query.py')
         local('cp ../' + datafile + ' .')
+        local('find . -iname "*.pyc" -delete')
 
 
 @task
@@ -34,7 +35,7 @@ def test():
     Run the query on the sub set of files
     '''
     with lcd(env.local_deploy_dir):  # pylint: disable=not-context-manager
-        local('pyspark < newsrods/local_runner.py')
+        local('pyspark < newsrods/remote_runner.py')
 
 
 @task
