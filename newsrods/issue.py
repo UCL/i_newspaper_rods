@@ -34,8 +34,8 @@ class Issue(object):
         except error:
             try:
                 self.tree = etree.parse(stream, parser)
-            except:
-                self.logger.error("Something terrible happened: %s", error)
+            except Exception as error2:
+                self.logger.error("Something terrible happened: %s", error2)
                 self.tree = None
                 self.issue = ''
                 self.articles = []
@@ -59,7 +59,12 @@ class Issue(object):
             self.date = datetime.strptime(raw_date, "%Y%m%d")
         else:
             self.date = None
-        self.page_count = int(self.single_query('//ip/text()'))
+        try:
+            self.page_count = int(self.single_query('//ip/text()'))
+        except Exception as error:
+            self.logger.error("Failed to get page count: %s", error)
+            self.page_count = 0
+
         self.day_of_week = self.single_query('//dw/text()')
 
     def query(self, query):
