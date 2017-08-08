@@ -5,13 +5,13 @@ import os
 from datetime import datetime
 from contextlib import nested
 
-env.run_at="/home/ucgajhe/Scratch/TDA/output"
-env.deploy_to="/home/ucgajhe/devel/TDA"
+env.run_at="/home/ccearal/Scratch/output/i_newspaper_rods"
+env.deploy_to="/home/ccearal/i_newspaper_rods"
 env.clone_url="git@github.com:UCL/i_newspaper_rods.git"
-env.corpora="/home/ucgajhe/Scratch/TDA"
+env.corpora="/home/ccearal/Scratch"
 env.hosts=['legion.rc.ucl.ac.uk']
 env.machine='legion'
-env.user='ucgajhe'
+env.user='ccearal'
 
 modules = nested(prefix('module swap compilers compilers/gnu'),
      prefix('module swap mpi mpi/openmpi/1.10.1/gnu-4.9.2'),
@@ -46,14 +46,14 @@ def warm(branch='master'):
 
 @task
 def test(branch='master'):
-  with cd(os.path.join(env.deploy_to,'i_newspaper_rods')):
+  with cd(os.path.join(env.deploy_to,'')):
         with modules:
              run('iinit')
              run('py.test')
 
 @task
-def sub(query, corpus='output/saved_ids.yml',
-        subsample=1, processes=48, wall='1:0:0'):
+def sub(query, corpus='output/i_newspaper_rods/saved_ids.yml',
+        subsample=1, processes=12, wall='0:10:0'):
     env.processes=processes
     env.subsample=subsample
     env.corpus=os.path.join(env.corpora,corpus)

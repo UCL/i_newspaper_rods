@@ -13,8 +13,8 @@ module swap mpi mpi/openmpi/1.10.1/gnu-4.9.2
 module load python2/recommended
 module load icommands
 %if subsample:
-gerun /home/${user}/.python2local/bin/newsrods ${dest_query} ${corpus} --fromfile --downsample ${subsample} --outpath ${outpath}
+time gerun /home/${user}/.python2local/bin/newsrods ${dest_query} ${corpus} --fromfile --downsample ${subsample} --outpath ${outpath}
 
 %else:
-gerun /home/${user}/.python2local/bin/newsrods ${dest_query} ${corpus} --fromfile --outpath ${outpath}
+time gerun /home/${user}/.python2local/bin/newsrods ${dest_query} ${corpus} --fromfile --outpath ${outpath}
 %endif

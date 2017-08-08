@@ -11,13 +11,13 @@ import requests
 
 class Issue(object):
     def __init__(self, oid):
-        self.path = 'http://arthur.rd.ucl.ac.uk/objects/' + oid
+        self.path = 'http://utilities.rd.ucl.ac.uk/objects/' + oid
         self.logger = logging.getLogger('performance')
         self.code = oid
 
     def load(self):
         self.logger.debug("Loading issue")
-        result = requests.get('http://arthur.rd.ucl.ac.uk/objects/' + self.code,
+        result = requests.get('http://utilities.rd.ucl.ac.uk/objects/' + self.code,
                 stream=True)
         self.logger.debug("Building issue DOM")
         # Try hard to parse the file, even if it looks like this:
