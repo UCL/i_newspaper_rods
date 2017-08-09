@@ -33,6 +33,8 @@ class Article(object):
     @property
     def words_string(self):
         '''
-        Return the full text of the article as a string
+        Return the full text of the article as a string. Remove all hyphens.
+        This merges hyphenated word by may cause problems with subordinate
+        clauses (The sheep - the really loud one - had just entered my office).
         '''
-        return '.'.join(self.words).replace('-', '')
+        return ' '.join(self.words).replace(' - ', '')
