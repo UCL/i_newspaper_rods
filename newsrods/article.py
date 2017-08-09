@@ -16,8 +16,8 @@ class Article(object):
         self.logger = getLogger('py4j')
         self.tree = source
         # DTD says only one text element per article
-        # Texts can have different children: preamble, title and cr. Each of 
-        # those is formed by pg (position guide) and p (paragraph) elements. 
+        # Texts can have different children: preamble, title and cr. Each of
+        # those is formed by pg (position guide) and p (paragraph) elements.
         # Paras are  made of words (wd).
         self.title = self.tree.xpath('text/text.title/p/wd/text()')
         self.preamble = self.tree.xpath('text/text.preamble/p/wd/text()')
@@ -26,6 +26,13 @@ class Article(object):
     @property
     def words(self):
         '''
-        Get the full text of the article, title etc.abs
+        Get the full text of the article, title etc.abs as a list of tokens
         '''
         return self.title + self.preamble + self.content
+
+    @property
+    def words_string(self):
+        '''
+        Return the full text of the article as a string
+        '''
+        return '.'.join(self.words).replace('-', '')
