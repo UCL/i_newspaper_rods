@@ -1,7 +1,6 @@
 '''
 This module counts the number of articles that per year that contain
-a given word. The input is a file containing a list of words to search for
-and each words counts are given seperately.
+a given word.
 '''
 
 from operator import add
