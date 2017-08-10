@@ -33,11 +33,10 @@ def set_vars(username):
 
 
 @task
-def install(processes=12, wall='30:0:0'):
+def install(wall='10:0:0'):
     '''
     Run the python setuptools code
     '''
-    env.processes = processes
     env.wall = wall
 
     # Generate script for qsub
@@ -52,9 +51,6 @@ def install(processes=12, wall='30:0:0'):
     run('mkdir -p ' + env.run_at)
     with cd(env.run_at):  # pylint: disable=not-context-manager
         put(env.local_deploy_dir + '/*', '.')
-        put('deploy/sparkrun', 'sparkrun', mode=0766)
-        put('deploy/*.sh', '.', mode=0766)
-        run('zip -r news.zip newsrods')
 
 
 @task

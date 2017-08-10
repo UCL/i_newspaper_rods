@@ -2,16 +2,18 @@
 #$ -S /bin/bash
 #$ -P RCSoftDev
 #$ -l h_rt=${wall}
-#$ -l mem=16G
 #$ -N Newsrods
-#$ -pe mpi ${processes}
+#$ -pe mpi 1
 #$ -l paid=1
-#$ -ac allow="U"
+#$ -ac allow="XYZU"
 #$ -ac exclusive
 #$ -wd ${run_at}
+#$ -t 1-${last}
 
 module load python2/recommended
 module load rsd-modules
 module load spark
 
-./sparkrun --py-files news.zip newsrods/remote_runner.py
+echo "Running $JOB_NAME $SGE_TASK_ID"
+
+pyspark < newsrods/remote_runner.py
