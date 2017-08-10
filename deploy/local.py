@@ -25,7 +25,7 @@ def install(query, datafile):
     with lcd(env.local_deploy_dir):  # pylint: disable=not-context-manager
         local('cp -r ../newsrods .')
         local('cp ../' + query + ' ./newsrods/query.py')
-        local('cp ../' + datafile + ' .')
+        local('cp ../' + datafile + ' input.1.data')
         local('find . -iname "*.pyc" -delete')
         local('find . -iname "__pycache__" -delete')
 
