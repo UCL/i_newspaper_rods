@@ -106,8 +106,8 @@ results/
 
 # Outputs
 oids.txt
-result.yml
-result.*.yml
+analysis/*.yml
+analysis/*.csv
 
 # R Outputs
 *.html
