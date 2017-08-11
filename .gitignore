@@ -103,3 +103,13 @@ results/
 *#
 *.swp
 *swo
+
+# Outputs
+oids.txt
+result.yml
+result.*.yml
+
+# R Outputs
+*.html
+.RData
+.Rhistory
