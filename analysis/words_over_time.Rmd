@@ -12,6 +12,8 @@ suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(MASS))
 suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(pander))
+suppressPackageStartupMessages(library(car))
 ```
 
 
@@ -27,6 +29,34 @@ counts = lapply(names(data), function(year){
 }) %>% rbindlist
 ```
 
+We should merge the multiple spelling words. These are:
+
+   * Househusband, house husband, house-husband
+   * Housewife, house wife, house-wife
+
+These may be the only words which contain "-" or " ", which we should check.
+
+```{r checkForHyphenOrSpace}
+counts %>% 
+  ungroup %>%
+  dplyr::select(word) %>% 
+  unique %>%
+  filter(grepl("[ -]", word)) %>% 
+  as.vector() %>% 
+  pander
+```
+
+These are the only words that contain "-", but "he said" and "she said" contain " ". So we should be a bit more careful and use `recode`. However, after
+this we will need to recompute the counts.
+
+```{r mergeMultiWords}
+counts %<>%
+  mutate(word = recode(word, "'house husband'='househusband';'house-husband'='househusband';'house wife'='housewife';'house-wife'='housewife'")) %>%
+  group_by(year, word) %>%
+  summarize(count = sum(count))
+```
+ 
+
 ```{r simplePlot,fig.height=50,fig.width=10}
 ggplot(counts, aes(x=year,y=count +1)) + 
   geom_point() +
@@ -35,3 +65,45 @@ ggplot(counts, aes(x=year,y=count +1)) +
   facet_wrap(~word, ncol=4) + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
+
+There are a few things that I have noticed that might be interesting:
+
+   * himself/herself/itself etc only seem to appear in the archive at the start of the 1800's
+   * The length of the times archive per year / issue / article is not constant. This will hide aspects of the trend. 
+   
+We can start by trying to address the issue of word published per year. Fortunately, we have this data available as well.
+
+```{r getYearWordCounts}
+words_per_year = fread('words_per_year.csv', header=T)
+```
+
+And we can see there is a large difference in how many words are published year to year.
+
+```{r showWordsIncreasingAnnually}
+ggplot(words_per_year,aes(year,num_words)) +
+  geom_point() + 
+  geom_line()
+```
+
+We can now add this data into our table of occurances.
+
+```{r joinCountsandTotalCounts}
+combined = left_join(counts,words_per_year,by="year")
+assertthat::are_equal(nrow(counts),nrow(combined))
+```
+
+This enables to us to plot how much of the total annual writing a single word makes up over time.
+This normalises for the effect of the changing size of the corpus from year to year.
+
+Since the words all appear with very differing frequencies, we will make the plots each have 
+independant x axes, so we can see the trend for each word individually.
+
+```{r normalisedWordCountPlot, fig.height=50, fig.width=10}
+ggplot(combined, aes(year, 10000 * count/num_words)) +
+  geom_point() + 
+  geom_line() +
+  xlab("Year") + 
+  ylab("Per 10k of annual words") +
+  facet_wrap(~word, ncol=3,scales = "free_y")
+```
+ 

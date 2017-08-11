@@ -1,0 +1,26 @@
+---
+title: Keywords in context
+---
+
+
+Let us start by loading some packages which will be useful for the analysis.
+
+```{r loadLibraries}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(yaml))
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(tidytext))
+```
+
+
+We now need to load in the data files with all of the results
+
+```{r loadData}
+data = yaml.load_file("result.yml")
+counts = lapply(names(data), function(year){
+  lapply(data[[year]], function(pair) {
+    data.frame(year=as.numeric(year), word=pair[[1]], count=as.numeric(pair[[2]]))
+  }) %>% rbindlist
+}) %>% rbindlist
+```
