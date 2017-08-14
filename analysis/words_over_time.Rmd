@@ -14,6 +14,7 @@ suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(magrittr))
 suppressPackageStartupMessages(library(pander))
 suppressPackageStartupMessages(library(car))
+suppressPackageStartupMessages(library(tidyverse))
 ```
 
 
@@ -21,7 +22,7 @@ Now we need to load in our data file and change the structure from YAML
 to something that we can more easily manipulate.
 
 ```{r loadData}
-data = yaml.load_file("result.yml")
+data = yaml.load_file("words_over_time.yml")
 counts = lapply(names(data), function(year){
   lapply(data[[year]], function(pair) {
     data.frame(year=as.numeric(year), word=pair[[1]], count=as.numeric(pair[[2]]))
@@ -106,4 +107,91 @@ ggplot(combined, aes(year, 10000 * count/num_words)) +
   ylab("Per 10k of annual words") +
   facet_wrap(~word, ncol=3,scales = "free_y")
 ```
+
+Actually deciding what this data all means can be a bit difficult. 
+So for this analysis we want to focus on two different different aspects of representation. 
+
+   * Referential - When different genders are mentioned in articles. Ie. An article about a man or a woman who sum the Channel. 
+   * Agentive - When a agent of a given gender says something
+   
+We will try use mutliple measures where possible to mitigate bias and OCR errors. 
+
+
+## Referential Gender Variation
+
+We can begin to get an idea about the frequency of references to different genders by plotting the curve of the difference in 
+their relative mentions. Doing this for a couple of word pairs should give us an indication of possible trends.
+
+We can start by picking some common word pairs to consider:
+
+   * He - She
+   * Him - Her
+   * Himself - Herself
+   * Man - Woman
+   * Boy - Girl
+   * Lad - Lass
+   
+As well as the animal pairs: 
+
+ * Lion - Lioness
+ * Buck - Doe
+ * Stallion - Mare
+ * Boar - Sow
+ * Ram - Ewe
  
+In terms of count, rather than using the count of words relative to the total words in the archive 
+for that year, we will look at the ratio of the female form to the total of male + female. 
+ 
+```{r rReferencePairs, fig.width=10,fig.height=15}
+referencePairs = c("he","she",
+                    "him","her",
+                    "himself","herself",
+                    "man","woman",
+                    "boy","girl",
+                    "lad","lass",
+                    "lion","lioness",
+                    "buck","doe",
+                    "stallion","mare",
+                    "boar","sow",
+                    "ram","ewe")
+combined %>% 
+  filter(word %in% referencePairs) %>% 
+  rowwise() %>% 
+  mutate(gender = ifelse(mod(which(word == referencePairs),2) == 0, "Female", "Male"),
+         group  = as.integer((which(word == referencePairs) - 1) / 2),
+         group_name = paste(referencePairs[(2*group) + 2], referencePairs[(2*group) + 1], sep = ' - ')) %>% 
+  ungroup() %>%
+  dplyr::select(year, group_name, gender, count) %>% 
+  spread(gender, count) %>% 
+  ggplot(aes(year,  Female / (Male + Female))) +
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~group_name, scales="free_y",ncol=3)
+```
+
+One needs to be careful interpretting the results because the quality of the OCR is exremely variable. For short words,
+like he and he, there is a higher probability of them being OCR artefacts as opposed to real words. For longer words there
+may be issues around the OCR detecting the whole word. 
+
+## Agentive Gender Variation
+
+We can now use the same method and look for actions. In our data set this is:
+
+   * He said - She Said
+   
+```{r rAgentivePairs, fig.width=10,fig.height=5}
+referencePairs = c("he said","she said")
+combined %>% 
+  filter(word %in% referencePairs) %>% 
+  rowwise() %>% 
+  mutate(gender = ifelse(mod(which(word == referencePairs),2) == 0, "Female", "Male"),
+         group  = as.integer((which(word == referencePairs) - 1) / 2),
+         group_name = paste(referencePairs[(2*group) + 2], referencePairs[(2*group) + 1], sep = ' - ')) %>% 
+  ungroup() %>%
+  dplyr::select(year, group_name, gender, count) %>% 
+  spread(gender, count) %>%
+  ggplot(aes(year,  Female / (Male + Female))) +
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~group_name)
+```
