@@ -8,7 +8,7 @@ from fabric.api import task, env, execute, lcd, local
 
 
 @task
-def setup(query, datafile, years_per_chunk, number_oid=-1):
+def setup(query, datafile, years_per_chunk=1e10, number_oid=-1):
     '''
     Prepare instance for running. Generates necessary files and installs
     packages
