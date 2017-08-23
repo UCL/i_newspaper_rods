@@ -1,6 +1,8 @@
 '''
-This module looks for regex matches in articles. It returns the
-count for each match each year.
+This module looks for regex matches in articles. It returns the full matching
+expression for each match. This can be used to find the context in which a word
+occurs. Note that this should probbably be limited to local context (a few
+words).
 '''
 
 from operator import add
@@ -9,7 +11,7 @@ import re
 
 def do_query(issues, interesting_words_file):
     '''
-    Get the count of specific words of interest by year
+    Get the text which matches a given regex in an issue.
     '''
     # Get the list of words to search for
     interesting_words = [re.compile(word.strip(), re.I | re.U)

@@ -9,7 +9,7 @@ import re
 
 def do_query(issues, interesting_words_file):
     '''
-    Get the count of specific words of interest by year
+    Get number of articles which contain a given word a year.
     '''
     # Get the list of words to search for
     interesting_words = [re.compile(r'\b' + word.strip() + r'\b', re.I | re.U)
