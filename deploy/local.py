@@ -39,7 +39,7 @@ def test():
     Run the query on the sub set of files
     '''
     with lcd(env.local_deploy_dir):  # pylint: disable=not-context-manager
-        local('pyspark < newsrods/remote_runner.py')
+        local('pyspark < newsrods/local_runner.py')
 
 
 @task
