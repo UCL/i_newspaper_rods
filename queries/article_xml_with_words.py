@@ -1,9 +1,10 @@
 '''
-This module the full XML of the articles that contain
-a given word.
+This module returns the full XML of the articles that contain
+a given regular expression.
 '''
 
 import re
+from lxml import etree  # pylint: disable=all
 
 
 def do_query(issues, interesting_words_file):
@@ -14,7 +15,7 @@ def do_query(issues, interesting_words_file):
     regex_string = r'\b('
     first = True
     for word in list(open(interesting_words_file)):
-        if first:
+        if not first:
             regex_string = regex_string + r'|'
         regex_string = regex_string + word.strip()
         first = False
@@ -41,5 +42,5 @@ def check_text(date, article, interesting_words):
     Catch articles that match the given regex
     '''
     if interesting_words.search(article.words_string) is not None:
-        return [(date, article.tree)]
+        return [(date, etree.tostring(article.tree))]
     return []
