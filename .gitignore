@@ -108,6 +108,8 @@ results/
 oids.txt
 analysis/*.yml
 analysis/*.csv
+analysis/**/*.png
+analysis/*.gif
 
 # R Outputs
 *.html
