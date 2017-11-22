@@ -52,7 +52,7 @@ been set up on Grace. However, once that has all been set up, the same commands 
 if the command `legion` is substituted for `grace`, with the same parameters. 
 
 You can run the program to run with:
-`fab --set DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH setup:query=queries/articles_containing_words.py,datafile=query_args/interesting_gender_words.txt,number_oid=0,year_per_chunk=5 legion:username=<YOUR_UCL_USER_ID> prepare sub`
+`fab --set DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH setup:query=queries/articles_containing_words.py,datafile=query_args/interesting_gender_words.txt,number_oid=0,years_per_chunk=5 legion:username=<YOUR_UCL_USER_ID> prepare sub`
 
 You can see the status of your jobs with: `fab legion:username=<YOUR_UCL_USER_ID> stat`
 
