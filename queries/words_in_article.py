@@ -22,18 +22,19 @@ def do_query(issues, interesting_words_file):
                          for word in list(open(interesting_words_file))]
     # Map each article in each issue to a year of publication
     articles = issues.flatMap(lambda issue: [(print_datetime(issue.date),
+                                              issue.date.year,
                                               idx, article) for
                                              idx, article in
                                              enumerate(issue.articles)])
     # Add word that appears in each article
-    interest = articles.flatMap(lambda (date, idx, article):
-                                [((date, idx), [regex.pattern]) for regex in
-                                 interesting_words if
+    interest = articles.flatMap(lambda (date, year, idx, article):
+                                [((date, year, idx), [regex.pattern]) for
+                                 regex in interesting_words if
                                  regex.findall(article.words_string)])
     # Now add sum the year-word counts, and change the format for output
     interesting_by_year = interest \
         .reduceByKey(concat) \
-        .map(lambda (date_idx, patterns): (date_idx[0],
+        .map(lambda (date_idx, patterns): (date_idx[1],
                                            [[pat.replace(r'\b', '') for pat in
                                              patterns]])) \
         .reduceByKey(concat) \
