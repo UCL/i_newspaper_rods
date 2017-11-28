@@ -90,5 +90,28 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# Local Spark Testing
+metastore_db/
+
 # Test data (DTD schema and save IDs' yaml)
 data/
+results/
+
+# IDE / Editor files
+*~
+.vscode/
+*#
+*.swp
+*swo
+
+# Outputs
+oids.txt
+analysis/*.yml
+analysis/*.csv
+analysis/**/*.png
+analysis/*.gif
+
+# R Outputs
+*.html
+.RData
+.Rhistory

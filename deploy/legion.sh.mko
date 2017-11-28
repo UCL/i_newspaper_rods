@@ -2,19 +2,18 @@
 #$ -S /bin/bash
 #$ -P RCSoftDev
 #$ -l h_rt=${wall}
-#$ -l mem=16G
 #$ -N Newsrods
-#$ -pe mpi ${processes}
+#$ -pe mpi 1
 #$ -l paid=1
-#$ -ac allow="U"
+#$ -ac allow="XYZU"
 #$ -ac exclusive
 #$ -wd ${run_at}
-module swap compilers compilers/gnu
-module swap mpi mpi/openmpi/1.10.1/gnu-4.9.2
+#$ -t 1-${last}
+
 module load python2/recommended
-module load icommands
-module load personal-modules
-module load java
+module load rsd-modules
 module load spark
 
-sparkrun query.py
+echo "Running $JOB_NAME $SGE_TASK_ID"
+
+pyspark < newsrods/remote_runner.py
