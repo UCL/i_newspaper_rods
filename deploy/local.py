@@ -24,6 +24,7 @@ def install(query, datafile):
     '''
     Run the tests
     '''
+    local('rm -rf ' + env.local_deploy_dir)
     local('mkdir -p ' + env.local_deploy_dir)
     with lcd(env.local_deploy_dir):  # pylint: disable=not-context-manager
         local('cp -r ../newsrods .')
