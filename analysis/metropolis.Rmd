@@ -1,0 +1,122 @@
+---
+title: Rise of the Modern Metropolis
+date: "`r format(Sys.Date(), '%a %b %d %Y')`"
+---
+
+
+We can start by loading the libraries we will be using for data analysis. 
+
+```{r loadLibraries}
+suppressPackageStartupMessages(library(yaml))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(MASS))
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(pander))
+suppressPackageStartupMessages(library(car))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(gtools))
+```
+
+
+Our yaml document contains articles with their words of interest extracted. 
+What we care is in how many articles each year these different words occur. This should
+be normalised by the number of articles. 
+
+```{r loadData}
+yamlRaw = yaml.load_file('city_colocates.yml')
+
+counts = fread("article_counts.csv", sep=":", head=FALSE) %>% 
+  setnames(c("year","articles"))
+```
+
+```{r convertListsToLists}
+yamlRaw %<>% lapply(function(l){
+  lapply(l, function(words_count){
+    count = words_count[[2]]
+    words = words_count[[1]] %>% gsub("(\\[|]|'| )","",.) %>% strsplit(",") %>% unlist
+    list(words, count)
+  })
+})
+```
+
+```{r parseTables}
+word_counts = map2(names(yamlRaw), yamlRaw, function(year, list_count_list){
+ lapply(list_count_list, function(list_count) {
+   data.frame(word = list_count[[1]], count = list_count[[2]] )
+ }) %>% rbindlist %>%
+    group_by(word) %>%
+    summarise(count = sum(count)) %>%
+    ungroup %>%
+    mutate(year = as.integer(year))
+}) %>% rbindlist()
+
+word_counts %<>% left_join(counts, by='year')
+```
+
+We can start by plotting the occurance of each word over time.
+
+```{r plotNormalisedCounts, fig.width=10, fig.height=20}
+word_counts %>% 
+  ggplot(aes(x = year, y = count / articles, colour=word)) + 
+    geom_point() + 
+    geom_line() + 
+    ylab('Normalised Frequency') + 
+    facet_wrap(~word, ncol=2) +
+    ggtitle('Diachonic Normalised Word Occurance')
+```
+```{r generatePairs}
+pairs = map2(names(yamlRaw), yamlRaw, function(year, list_count_list){
+ lapply(list_count_list, function(list_count) {
+   words = list_count[[1]]
+   count = list_count[[2]]
+   if(length(words) == 1){
+     return(data.frame(word1 = words, word2= NA, count = count))
+   } else {
+     combinations(length(words), 2, words, repeats= F) %>%
+       as.data.frame(stringsAsFactors=F) %>%
+       setnames(c('word1','word2')) %>%
+       mutate(count = count)
+   }
+ }) %>% rbindlist 
+}) %>% rbindlist()
+
+pairs %<>% left_join(counts, by='year')
+```
+
+```{r plotPairsHistory}
+pairs %>%
+  ggplot(aes(year, count / articles)) + 
+    geom_point() + 
+    geom_line() + 
+    facet_grid(word1 + word2~.)
+```
+
+```{r heatmap}
+plots = lapply(pairs$year %>% unique, function(year){
+  plot = pairs %>%
+    filter(year == year) %>%
+    ggplot(aes(word1, word2, fill=100 * count/articles)) + 
+      geom_tile() +
+      scale_fill_continuous(name="Density (%)") +
+      xlab("Word") +
+      ylab("Word") +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))    
+  ggsave(paste0("wordPairImages/", year, ".png"), plot= plot, width=10, height=10, units="cm")
+})
+system("convert -delay 100 -loop 0 wordPairImages/*.png wordPairImages/heatmap.gif")
+```
+
+![heatmap](wordPairImages/heatmap.gif)
+
+
+```{r test}
+ l = lapply(yamlRaw, function(x) lapply(x, function(y) y[[1]]))
+l%<>% flatten
+lens = sapply(l, length)
+ulens = sapply(l, function(x) length(unique(x)))
+which(lens - ulens > 0)
+```
+
+
