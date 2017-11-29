@@ -2,7 +2,7 @@
 This module finds which words are contained together in articles.
 '''
 
-from operator import concat
+from operator import concat, add
 import re
 
 
@@ -28,15 +28,19 @@ def do_query(issues, interesting_words_file):
                                              enumerate(issue.articles)])
     # Add word that appears in each article
     interest = articles.flatMap(lambda (date, year, idx, article):
-                                [((date, year, idx), [regex.pattern]) for
-                                 regex in interesting_words if
+                                [((date, year, idx),
+                                  [regex.pattern.replace(r'\b', '').lower()])
+                                 for regex in interesting_words if
                                  regex.findall(article.words_string)])
     # Now add sum the year-word counts, and change the format for output
     interesting_by_year = interest \
         .reduceByKey(concat) \
-        .map(lambda (date_idx, patterns): (date_idx[1],
-                                           [[pat.replace(r'\b', '') for pat in
-                                             patterns]])) \
-        .reduceByKey(concat) \
+        .map(lambda (date_idx, patterns):
+             ((date_idx[1], str(sorted(patterns))), 1)) \
+        .reduceByKey(add) \
+        .map(lambda (date_pat, count):
+             (date_pat[0], (date_pat[1], count))) \
+        .groupByKey() \
+        .map(lambda (year, data): (year, list(data))) \
         .collect()
     return interesting_by_year
