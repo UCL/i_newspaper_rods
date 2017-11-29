@@ -109,7 +109,7 @@ oids.txt
 analysis/*.yml
 analysis/*.csv
 analysis/**/*.png
-analysis/*.gif
+analysis/**/*.gif
 
 # R Outputs
 *.html
