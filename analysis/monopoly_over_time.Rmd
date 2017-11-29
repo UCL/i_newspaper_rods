@@ -1,0 +1,94 @@
+---
+title: Monopoly references over time!!!!
+---
+
+
+We can start by loading the libraries we will be using for data analysis. 
+
+```{r loadLibraries}
+suppressPackageStartupMessages(library(yaml))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(MASS))
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(pander))
+suppressPackageStartupMessages(library(car))
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+
+Now we need to load in our data file and change the structure from YAML
+to something that we can more easily manipulate.
+
+```{r loadData}
+data = yaml.load_file("monopoly_over_time_alt.yml")
+counts = lapply(names(data), function(year){
+  lapply(data[[year]], function(pair) {
+    data.frame(year=as.numeric(year), word=pair[[1]], count=as.numeric(pair[[2]]))
+  }) %>% rbindlist
+}) %>% rbindlist
+```
+
+We now need the words counts for each year of publication.
+
+```{r getYearWordCounts}
+words_per_year = fread('words_per_year.csv', header=T)
+```
+
+We can now add this data into our table of occurances.
+
+```{r joinCountsandTotalCounts}
+combined = left_join(counts,words_per_year,by="year")
+assertthat::are_equal(nrow(counts),nrow(combined))
+```
+
+This enables to us to plot how much of the total annual writing a single word makes up over time.
+This normalises for the effect of the changing size of the corpus from year to year.
+
+Since the words all appear with very differing frequencies, we will make the plots each have 
+independant x axes, so we can see the trend for each word individually.
+
+Please note that Monopoly in Britain was released in the early 1930s. 
+
+```{r normalisedWordCountPlot, fig.height=50, fig.width=10}
+ggplot(combined, aes(year, 10000 * count/num_words)) +
+  geom_point() + 
+  geom_line() +
+  xlab("Year") + 
+  ylab("Per 10k of annual words") +
+  facet_wrap(~word, ncol=2,scales = "free_y")
+```
+
+It looks like there might be something there. Let's add a variable for 1930 which is 
+around when Monopoly was released
+
+```{r monopolyDate}
+monopolyReleased = 1936
+```
+
+We now want to plot everything on the same axis. So rather than computing absolute values, we
+will instead plot relative change from year to year.
+
+There are two ways of doing this:
+
+ * In reference to the first non-zero value. 
+   This allows constant high values to show up, but may cause scaling issues.
+ * In reference to an average value. This is likely to be hard to read.
+ * In reference to the previous value. 
+   This makes it hard to see a sustained peak as opposed to sustained growth.
+   
+```{r combinedWordCountPlot, fig.width=10}
+combined %>%
+  mutate(normalised = count / num_words) %>% 
+  group_by(word) %>%
+  mutate(mean = mean(count)) %>%
+  ungroup %>%
+  mutate(meanRatio = count / mean) %>%
+  ggplot(aes(year, meanRatio, color=word)) +
+  geom_point(alpha=0.5) + 
+  geom_line(alpha=0.5) +
+  geom_vline(xintercept=monopolyReleased,colour="red") + 
+  xlab("Year") + 
+  ylab("Normalised word count relative to mean")
+```

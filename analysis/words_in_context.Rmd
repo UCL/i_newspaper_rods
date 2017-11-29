@@ -1,0 +1,170 @@
+---
+title: Keywords in context
+---
+
+
+Let us start by loading some packages which will be useful for the analysis.
+
+```{r loadLibraries}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(yaml))
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(tidytext))
+suppressPackageStartupMessages(library(wordcloud))
+suppressPackageStartupMessages(library(DT))
+```
+
+
+We now need to load in the data files with all of the results
+
+```{r loadData}
+csv_data = "words_in_context_table.csv"
+if(file.exists(csv_data)){
+  counts = fread(csv_data)
+} else {
+  data = yaml.load_file("words_in_context.yml")
+  counts = lapply(names(data), function(year){
+    lapply(data[[year]], function(pair) {
+      data.frame(year=as.numeric(year), regex=pair[[1]], word = pair[[2]], count=as.numeric(pair[[3]]))
+    }) %>% rbindlist
+  }) %>% rbindlist
+  write.csv2(counts, file="words_in_context_table.csv",quote=T,row.names=F)
+}
+```
+
+Now we can plot the most common words ending in 'm[a|e]n' as a word cloud. We will only plot the 100 most common words,
+and we will drop any words that occur less than 100 times (to avoid OCR errors and noise).
+
+```{r maenWordCloud, fig.width=8,fig.height=8}
+m_wordcloud = function(d,...){
+  wordcloud(d$word,d$count,...)
+}
+
+e = counts %>% 
+  filter(grepl("\\[e|a\\]", regex)) %>% 
+  select(word,count) %>%
+  group_by(word) %>%
+  summarize(count = sum(count)) %>%
+  filter(count > 100) %>%
+  arrange(desc(count)) 
+
+e %>%
+  head(100) %>%
+  m_wordcloud(scale=c(7,1))
+```
+
+And also just let us see the list
+
+```{r maenTable}
+datatable(e)
+```
+
+Now we shall look at words that follow gender contexts. So the first thing to do is to see how much data we actually collected. 
+
+```{r findWordContexts}
+contexts = counts %>% 
+  filter(!grepl("\\[e|a\\]", regex)) %>% 
+  mutate(gender = ifelse(grepl("wom[a|e]n", regex),"Female","Male"),
+         quantity = ifelse(grepl(" are ",regex), "Plural","Singular"))
+```
+
+
+So first we want to explore the number of phrases we have per year
+
+```{r contextPerAnnum}
+contexts %>% 
+  group_by(year, gender, quantity) %>% 
+  summarise(phrases= length(word)) %>% 
+  ggplot(aes(year,phrases)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_grid(gender ~ quantity)
+```
+
+I will now use the 4 way split data to do some analysis of the most common words (we will need to remove some words to make this more interesting). I don't think this is necessarily especially sound with the amount of data - so I am going to remove the time aspect to increase the number of available words.
+
+```{r contextWordClouds}
+wordcloudData = contexts %>%
+  mutate(class= paste(gender,quantity,sep="_"),
+         phrase = gsub("(wo)?m[a|e]n (is|are) ","", word)) %>% 
+  split(.,.$class) %>% 
+  lapply(function(df){
+    map2(df$count,df$phrase, function(count,phrase) {
+      data.table(word = replicate(count,phrase) %>% 
+        strsplit("\\s") %>% 
+        unlist)
+    }) %>% 
+      rbindlist %>% 
+      group_by(word) %>% 
+      summarise(count = n()) %>%
+      mutate(gender   = unique(df$gender),
+             quantity = unique(df$quantity)) %>%
+      arrange(desc(count))
+  })
+```
+
+```{r wordCloudsContext,fig.width=18,fig.height=18}
+lapply(wordcloudData, function(df){
+  df %>% 
+    anti_join(stop_words,by="word") %>%
+    arrange(desc(count)) %>% 
+    head(150) %>%
+    m_wordcloud(scale=c(10,1)) %>%
+    print
+  
+  return(paste(unique(df$gender),unique(df$quantity)))
+})
+```
+
+## Sentiment analysis of contexts
+
+For simplicity I am going to use context free (one word at a time) sentiment scoring. I will try three different scoring systems and compare the results.
+
+```{r sentimentNRC}
+nrc_senti = get_sentiments("nrc")
+wordcloudData %>%
+  rbindlist %>% 
+  dplyr::select(-quantity) %>% 
+  inner_join(nrc_senti,by="word") %>%
+  group_by(gender,sentiment) %>% 
+  summarise(count = sum(count)) %>% 
+  ggplot(aes(sentiment,count)) +
+  geom_col() +
+  facet_wrap(~gender) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  xlab("NRC Sentiment Count") + 
+  ylab("Count")
+```
+
+```{r sentimentBing}
+bing_senti = get_sentiments("bing")
+wordcloudData %>%
+  rbindlist %>% 
+  dplyr::select(-quantity) %>% 
+  inner_join(bing_senti,by="word") %>%
+  group_by(gender,sentiment) %>% 
+  summarise(count = sum(count)) %>% 
+  ggplot(aes(sentiment,count)) +
+  geom_col() +
+  facet_wrap(~gender) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  xlab("Bing et al. Sentiment Count") + 
+  ylab("Count")
+```
+
+```{r sentimentAfinn}
+afinn_senti = get_sentiments("afinn")
+wordcloudData %>%
+  rbindlist %>% 
+  dplyr::select(-quantity) %>% 
+  inner_join(afinn_senti,by="word") %>%
+  split(.,.$gender) %>% 
+  lapply(function(df){
+    data.frame(gender=unique(df$gender),
+               scores=map2(df$count,df$score,replicate) %>% unlist)
+  }) %>% rbindlist %>%
+  ggplot(aes(scores)) +
+  geom_histogram(binwidth = 1) +
+  facet_grid(~gender)
+```
