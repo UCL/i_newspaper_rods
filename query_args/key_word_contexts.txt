@@ -1,5 +1,0 @@
-\bwomen are (?:[A-Za-z_'-]+\s*){,5}
-\bwomen is (?:[A-Za-z_'-]+\s*){,5}
-\bmen are (?:[A-Za-z_'-]+\s*){,5}
-\bman is (?:[A-Za-z_'-]+\s*){,5}
-\b\w*m[e|a]n\b

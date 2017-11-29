@@ -96,6 +96,7 @@ metastore_db/
 # Test data (DTD schema and save IDs' yaml)
 data/
 results/
+query_args/
 
 # IDE / Editor files
 *~
@@ -106,10 +107,7 @@ results/
 
 # Outputs
 oids.txt
-analysis/*.yml
-analysis/*.csv
-analysis/**/*.png
-analysis/**/*.gif
+analysis/
 
 # R Outputs
 *.html
