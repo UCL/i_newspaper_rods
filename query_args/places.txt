@@ -1,1 +1,0 @@
-\b(?:\S+\s*){1,2}\b(?:Street|St|Road|Rd|Avenue|Av|Way|Crescent|Alley|Mews|Pub|Public Bar|School|College|Center|Centre|Cinema|Store|Hospital|Office|Market|Church|Park|Green|Heath|Junction|Station|House|Home)\b

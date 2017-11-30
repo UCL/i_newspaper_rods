@@ -1,1 +1,0 @@
-w(h|b)ite\s*-?\s*c(h|b)app?ell?
