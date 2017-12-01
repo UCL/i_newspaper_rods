@@ -2,8 +2,15 @@
 This module finds which words are contained together in articles.
 '''
 
-from operator import concat, add
+from operator import concat
 import re
+
+
+def concat_snd(a, b):  # pylint: disable=C0103
+    '''
+    Concatenate two lists in the second place of a tuple
+    '''
+    return (a[0], a[1] + b[1])
 
 
 def print_datetime(datetime):
@@ -22,25 +29,27 @@ def do_query(issues, interesting_words_file):
                          for word in list(open(interesting_words_file))]
     # Map each article in each issue to a year of publication
     articles = issues.flatMap(lambda issue: [(print_datetime(issue.date),
-                                              issue.date.year,
-                                              idx, article) for
-                                             idx, article in
-                                             enumerate(issue.articles)])
+                                              issue.tree.getpath(article.tree),
+                                              article) for
+                                             article in
+                                             issue.articles])
     # Add word that appears in each article
-    interest = articles.flatMap(lambda (date, year, idx, article):
-                                [((date, year, idx),
+    interest = articles.flatMap(lambda (date, xpath, article):
+                                [((date, xpath),
                                   [regex.pattern.replace(r'\b', '').lower()])
                                  for regex in interesting_words if
                                  regex.findall(article.words_string)])
-    # Now add sum the year-word counts, and change the format for output
-    interesting_by_year = interest \
-        .reduceByKey(concat) \
-        .map(lambda (date_idx, patterns):
-             ((date_idx[1], str(sorted(patterns))), 1)) \
-        .reduceByKey(add) \
-        .map(lambda (date_pat, count):
-             (date_pat[0], (date_pat[1], count))) \
-        .groupByKey() \
-        .map(lambda (year, data): (year, list(data))) \
+    # Concatenate the words for each article
+    words_grouped = interest.reduceByKey(concat)
+
+    # sort the words, then find all the xpaths that match that word list
+    xpaths_grouped = words_grouped \
+        .map(lambda (date_path, patterns): (date_path, sorted(patterns))) \
+        .map(lambda (date_path, patterns):
+             ((date_path[0], str(patterns)),
+              (patterns, [date_path[1]]))) \
+        .reduceByKey(concat_snd) \
+        .map(lambda (date_pat, pat_paths):
+             (date_pat[0], (pat_paths[0], pat_paths[1]))) \
         .collect()
-    return interesting_by_year
+    return xpaths_grouped
