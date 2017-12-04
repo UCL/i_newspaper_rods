@@ -20,73 +20,145 @@ suppressPackageStartupMessages(library(gtools))
 ```
 
 
-Our yaml document contains articles with their words of interest extracted. 
-What we care is in how many articles each year these different words occur. This should
-be normalised by the number of articles. 
+First we need to find the count of articles in each article. We
+do this by reading the data in and turning it into a dataframe.
 
-```{r loadData}
-yamlRaw = yaml.load_file('city_colocates.yml')
-
-counts = fread("article_counts.csv", sep=":", head=FALSE) %>% 
-  setnames(c("year","articles"))
+```{r readCounts}
+counts = list.files(path = "./articleCounts/", pattern = "result.*.yml", full=T) %>%
+  lapply(function(file){
+    yaml.load_file(file) %>% 
+      map2(names(.), . , function(year, count) data.frame(date = year, articles = count)) %>%
+      rbindlist
+  }) %>% rbindlist %>%
+  mutate(date = as.Date(date, format="%d-%m-%Y"))
 ```
 
-```{r convertListsToLists}
-yamlRaw %<>% lapply(function(l){
-  lapply(l, function(words_count){
-    count = words_count[[2]]
-    words = words_count[[1]] %>% gsub("(\\[|]|'| )","",.) %>% strsplit(",") %>% unlist
-    list(words, count)
-  })
-})
+
+We can now have a look at how many articles there are per issue as a sanity check.
+
+```{r plotArticles}
+ggplot(counts, aes(date, articles)) +
+#  geom_point() + 
+  geom_line() +
+  scale_y_log10()
 ```
 
-```{r parseTables}
-word_counts = map2(names(yamlRaw), yamlRaw, function(year, list_count_list){
- lapply(list_count_list, function(list_count) {
-   data.frame(word = list_count[[1]], count = list_count[[2]] )
- }) %>% rbindlist %>%
-    group_by(word) %>%
-    summarise(count = sum(count)) %>%
-    ungroup %>%
-    mutate(year = as.integer(year))
-}) %>% rbindlist()
 
-word_counts %<>% left_join(counts, by='year')
+Right. This seems wrong to me. Too noisy. This is either the fault of the code or the OCR.
+I will put of checking this until later. Or it could be a weekday thing?
+
+We can also check the number of articles that had some sort of dramatic failure in loading.
+
+```{r countFailures}
+counts %>% filter(date > as.Date("2010-01-01")) %>% nrow
+```
+
+Or double up files
+
+```{r countDoubles}
+counts %>% 
+  select(date) %>%
+  group_by(date) %>%
+  summarise(count = n()) %>%
+  filter(count != 1)
+```
+
+
+We now need to read in the words which occur in each article and create a list of 
+word counts. Note that there is a bug in the R yaml file reader that occasionally
+does not parse all the expressions it creates. 
+
+```{r readWords}
+notParsed <- function(string) {
+  grepl("^c\\(.*\\)$", string)
+}
+
+wordCounts = list.files(path = "./metropolisWordCounts/", pattern = "result.*.yml", full=T) %>%
+lapply(function(file){
+  yaml.load_file(file) %>% 
+    lapply(function(data) {
+      if(length(data[[2]] == 1) && notParsed(data[[2]])){
+        data[[2]] <- data[[2]] %>% 
+          parse(text= . ) %>% 
+          eval
+        return(data)
+      }else {
+        return(data)
+      } 
+    }) %>% 
+  map2(names(.), ., function(year, list){
+    count = list[[2]] %>% length
+    words = list[[1]]
+    return(data.frame(date = year, word = words, count = count))
+  }) %>% 
+  rbindlist 
+}) %>% 
+  rbindlist %>% 
+  mutate(date = as.Date(date, format="%d-%m-%Y"))
+```    
+
+
+Now we need to compute the counts of different pairs. 
+
+```{r pairCounts}
+pairCounts = list.files(path = "./metropolisWordCounts/", pattern = "result.*.yml", full=T) %>%
+  lapply(function(file){
+  yaml.load_file(file) %>% 
+    lapply(function(data) {
+      if(length(data[[2]] == 1) && notParsed(data[[2]])){
+        data[[2]] <- data[[2]] %>% 
+          parse(text= . ) %>% 
+          eval
+      }
+      data[[1]] <- unique(data[[1]])
+      return(data)
+    }) %>% 
+    map2(names(.), . , function(year, list) {
+      count = list[[2]] %>% length
+      words = list[[1]]
+      if(length(words) == 1){
+        return(data.frame(date = year, word1 = words, word2 = words, count = count))
+      } else {
+        combinations(length(words), 2, words, repeats= F) %>%
+          as.data.frame(stringsAsFactors=F) %>%
+          setnames(c('word1','word2')) %>%
+          mutate(count = count, date = year) %>% 
+          return
+        }
+      })  %>%
+      rbindlist(use.names=T)
+   }) %>% rbindlist(use.names=T) %>%
+  mutate(date = as.Date(date, format="%d-%m-%Y"))
+```
+
+Add the issue count information
+
+```{r joinTables}
+pairCounts %<>% left_join(counts, by='date')
+wordCounts %<>% left_join(counts, by='date')
 ```
 
 We can start by plotting the occurance of each word over time.
 
 ```{r plotNormalisedCounts, fig.width=10, fig.height=20}
-word_counts %>% 
-  ggplot(aes(x = year, y = count / articles, colour=word)) + 
+wordCounts %>% 
+  mutate(year = year(date)) %>%
+  group_by(year, word) %>%
+  summarise( articles = sum(articles), count = sum(count)) %>%
+  ggplot(aes(x = year, y = count / articles)) + 
     geom_point() + 
     geom_line() + 
     ylab('Normalised Frequency') + 
-    facet_wrap(~word, ncol=2) +
+    facet_wrap(~word, ncol = 2) + 
     ggtitle('Diachonic Normalised Word Occurance')
 ```
-```{r generatePairs}
-pairs = map2(names(yamlRaw), yamlRaw, function(year, list_count_list){
- lapply(list_count_list, function(list_count) {
-   words = list_count[[1]]
-   count = list_count[[2]]
-   if(length(words) == 1){
-     return(data.frame(word1 = words, word2= NA, count = count))
-   } else {
-     combinations(length(words), 2, words, repeats= F) %>%
-       as.data.frame(stringsAsFactors=F) %>%
-       setnames(c('word1','word2')) %>%
-       mutate(count = count)
-   }
- }) %>% rbindlist 
-}) %>% rbindlist()
 
-pairs %<>% left_join(counts, by='year')
-```
 
 ```{r plotPairsHistory}
-pairs %>%
+pairCounts %>%
+  mutate(year = year(date)) %>%
+  group_by(year, word1, word2) %>%
+  summarize(count = sum(count), articles = sum(articles)) %>%
   ggplot(aes(year, count / articles)) + 
     geom_point() + 
     geom_line() + 
@@ -94,29 +166,55 @@ pairs %>%
 ```
 
 ```{r heatmap}
-plots = lapply(pairs$year %>% unique, function(year){
-  plot = pairs %>%
-    filter(year == year) %>%
-    ggplot(aes(word1, word2, fill=100 * count/articles)) + 
+words = 
+  c(pairCounts$word1 %>% as.character(), 
+    pairCounts$word2 %>% as.character()) %>%
+  unique %>% 
+  sort
+
+frames = pairCounts %>%
+  mutate(word1 = as.character(word1),
+         word2 = as.character(word2)) %>%
+  filter(word1 != word2) %>%
+  mutate(year = as.integer(year(date)/ 10) * 10) %>%
+  group_by(year, word1, word2) %>%
+  summarize(count = sum(count), articles = sum(articles)) %>%
+  group_by(year) %>%
+  do(plot = 
+    ggplot(., aes(word1, word2, fill=100 * count/articles)) + 
       geom_tile() +
       scale_fill_continuous(name="Density (%)") +
-      xlab("Word") +
-      ylab("Word") +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1))    
-  ggsave(paste0("wordPairImages/", year, ".png"), plot= plot, width=10, height=10, units="cm")
-})
-system("convert -delay 100 -loop 0 wordPairImages/*.png wordPairImages/heatmap.gif")
+      scale_y_discrete(name="Word", breaks=words) +
+      scale_x_discrete(name="Word", breaks=words) +
+      expand_limits(x=words, y=words) +
+      ggtitle(paste0("Decade: ",.$year %>% unique, "'s")) +
+      theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust=0))) %>%
+  ungroup
+
+  map2(frames$year, frames$plot, function(year, plot)
+    ggsave(paste0("wordPairImages/", year, ".png"), plot= plot, width=20, height=10, units="cm")
+    )
+  
+system("convert -delay 50 -loop 0 wordPairImages/*.png wordPairImages/heatmap.gif")
 ```
 
 ![heatmap](wordPairImages/heatmap.gif)
 
-
-```{r test}
- l = lapply(yamlRaw, function(x) lapply(x, function(y) y[[1]]))
-l%<>% flatten
-lens = sapply(l, length)
-ulens = sapply(l, function(x) length(unique(x)))
-which(lens - ulens > 0)
+Now let's find out what is happening with metropolis
+```{r metropolis,fig.height=15}
+pairCounts %>%
+  mutate(word1 = as.character(word1),
+         word2 = as.character(word2)) %>%
+  filter(word1 == "metropolis" | word2 == "metropolis") %>%
+  mutate(year = as.integer(year(date)/ 10) * 10) %>%
+  group_by(year, word1, word2) %>%
+  summarize(count = sum(count), articles = sum(articles)) %>%
+  mutate(word = ifelse(word1 == 'metropolis', word2, word1)) %>%
+    ggplot(aes(year, 100 * count/articles)) + 
+      geom_point() + 
+      geom_line() + 
+      ylab("% articles") + 
+      facet_wrap(~word, ncol=2)
 ```
 
 
