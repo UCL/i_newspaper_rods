@@ -33,6 +33,16 @@ reasons for it:
 
 # Executing
 
+### Query files
+
+Each job is made up of a query file. Which is a python script that does
+the computation and a datafile which contains the inputs to the query.
+Note that datafiles are optional. If you need to provide more than one, 
+you can separate them with `:`s. Note that files **cannot** contain `:`s
+as part of their names (not even escaped). 
+
+Eg. `datafile=query_args/in1.txt:query_args/in2.txt`.
+
 ### Testing Locally
 
 Any query can be tested on your local machine, using a tiny subset of the total 

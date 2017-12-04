@@ -18,7 +18,8 @@ def get_input(num):
     '''
     Get the filename for the numth input file
     '''
-    return 'input.' + str(num) + '.data'
+    # 1st file is actually the zeroth because arrays
+    return 'input.' + str(num - 1) + '.data'
 
 
 def run(iteration):

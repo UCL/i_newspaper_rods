@@ -8,7 +8,7 @@ from fabric.api import task, env, execute, lcd, local
 
 
 @task
-def setup(query, datafile, years_per_chunk=1e10, number_oid=-1):
+def setup(query, datafile=None, years_per_chunk=1e10, number_oid=-1):
     '''
     Prepare instance for running. Generates necessary files and installs
     packages
@@ -29,7 +29,9 @@ def install(query, datafile):
     with lcd(env.local_deploy_dir):  # pylint: disable=not-context-manager
         local('cp -r ../newsrods .')
         local('cp ../' + query + ' ./newsrods/query.py')
-        local('cp ../' + datafile + ' input.1.data')
+        if datafile is not None:
+            for idx, name in enumerate(datafile.split(':')):
+                local('cp ../' + name + ' input.' + str(idx) + '.data')
         local('find . -iname "*.pyc" -delete')
         local('find . -iname "__pycache__" -delete')
 
