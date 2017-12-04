@@ -106,8 +106,8 @@ results/
 
 # Outputs
 oids.txt
-analysis/*.yml
-analysis/*.csv
+analysis/**/*.yml
+analysis/**/*.csv
 analysis/**/*.png
 analysis/**/*.gif
 
