@@ -14,6 +14,13 @@ import yaml
 DATA_STORE_URL = "utilities.rd.ucl.ac.uk"
 
 
+def get_input(num):
+    '''
+    Get the filename for the numth input file
+    '''
+    return 'input.' + str(num) + '.data'
+
+
 def run(iteration):
     '''
     Link the file loading with the query
@@ -21,7 +28,7 @@ def run(iteration):
     context = SparkContext(appName="iNewspaperRods")
     session = SparkSession(context)  # noqa
     issues = get_streams(context, source="oids." + iteration + ".txt")
-    results = do_query(issues, 'input.1.data')
+    results = do_query(issues, get_input)
 
     with open('result.' + iteration + '.yml', 'w') as result_file:
         result_file.write(yaml.safe_dump(dict(results),

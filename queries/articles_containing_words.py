@@ -7,13 +7,13 @@ from operator import add
 import re
 
 
-def do_query(issues, interesting_words_file):
+def do_query(issues, get_input):
     '''
     Get number of articles which contain a given word a year.
     '''
     # Get the list of words to search for
     interesting_words = [re.compile(r'\b' + word.strip() + r'\b', re.I | re.U)
-                         for word in list(open(interesting_words_file))]
+                         for word in list(open(get_input(1)))]
     # Map each article in each issue to a year of publication
     articles = issues.flatMap(lambda issue: [(issue.date.year, article) for
                                              article in issue.articles])

@@ -7,14 +7,14 @@ import re
 from lxml import etree  # pylint: disable=all
 
 
-def do_query(issues, interesting_words_file):
+def do_query(issues, get_input):
     '''
     Get the count of specific words of interest by year
     '''
     # Get the list of words to search for
     regex_string = r'\b('
     first = True
-    for word in list(open(interesting_words_file)):
+    for word in list(open(get_input(1))):
         if not first:
             regex_string = regex_string + r'|'
         regex_string = regex_string + word.strip()

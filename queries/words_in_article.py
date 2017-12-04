@@ -20,13 +20,13 @@ def print_datetime(datetime):
     return "%02d-%02d-%04d" % (datetime.day, datetime.month, datetime.year)
 
 
-def do_query(issues, interesting_words_file):
+def do_query(issues, get_input):
     '''
     Get the words which appear together in articles.
     '''
     # Get the list of words to search for
     interesting_words = [re.compile(r'\b' + word.strip() + r'\b', re.I | re.U)
-                         for word in list(open(interesting_words_file))]
+                         for word in list(open(get_input(1)))]
     # Map each article in each issue to a year of publication
     articles = issues.flatMap(lambda issue: [(print_datetime(issue.date),
                                               issue.tree.getpath(article.tree),
