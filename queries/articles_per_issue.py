@@ -19,6 +19,5 @@ def do_query(issues, _):
     # and the value is each articles length
     articles = issues.flatMap(lambda issue: [(print_datetime(issue.date),
                                               len(issue.articles))]) \
-        .toDF(['date', 'count']) \
         .collect()
     return articles
