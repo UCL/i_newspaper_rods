@@ -3,27 +3,27 @@ Glasgow
 Manchester
 Edinburgh
 Liverpool
-Belfast 
+Belfast
 Dublin
 Paris
 Berlin
 Amsterdam
-Vienna 
+Vienna
 Constantinopole
 Moscow
 Rome
 Madrid
 Washington
-New York
+New\s*York
 Chicago
-San Francisco
-New Orleans
+San\s*Francisco
+New\s*Orleans
 Boston
 Philadelphia
-Los Angeles
-european metropolis
-american metropolis
-metropolis of the empire
-urban planning
+Los\s*Angeles
+european\s*metropolis
+american\s*metropolis
+metropolis\s*of\s*the\s*empire
+urban\s*planning
 modernity
 metropolis

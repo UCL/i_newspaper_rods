@@ -7,6 +7,7 @@ words).
 
 from operator import add
 import re
+from yaml import load
 
 
 def do_query(issues, get_input):
@@ -14,8 +15,19 @@ def do_query(issues, get_input):
     Get the text which matches a given regex in an issue.
     '''
     # Get the list of words to search for
-    interesting_words = [re.compile(word.strip(), re.I | re.U)
-                         for word in list(open(get_input(1)))]
+    with open(get_input(1)) as words_file:
+        words = list(words_file)
+    with open(get_input(2)) as rules_file:
+        match_rules = load(rules_file)
+    context_words = str(match_rules['context_words'])
+    word_regex = match_rules['word_regex'].strip()
+    context_regex = r"(?:" + word_regex + r"\s*){," + \
+                    context_words + r"}"
+    print(context_regex)
+    interesting_words = [re.compile(context_regex + r'\b' + word.strip() +
+                                    r'\b' + context_regex, re.I | re.U)
+                         for word in words]
+    print([m.pattern for m in interesting_words])
     # Map each article in each issue to a year of publication
     articles = issues.flatMap(lambda issue: [(issue.date.year, article) for
                                              article in issue.articles])
