@@ -177,4 +177,7 @@ wcs = filteredPlaces %>%
 ```
 
 ```{r animate}
+system("convert -delay 100 -loop 0 images/*.png images/stack.gif)
 ```
+
+![Animation of words](images/stack.gif)
