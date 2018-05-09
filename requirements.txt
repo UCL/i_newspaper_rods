@@ -1,0 +1,7 @@
+fs.sshfs>=0.8
+lxml>=3.8
+pyyaml>=3.12
+pytest>=3.4
+psutil>=5.4
+requests>=2.18
+fabric>=1.14
