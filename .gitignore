@@ -103,11 +103,14 @@ query_args/
 .vscode/
 *#
 *.swp
-*swo
+*.swo
+.pytest_cache/
+.cache/
 
 # Outputs
 oids.txt
 analysis/
+results/
 
 # R Outputs
 *.html

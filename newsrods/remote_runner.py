@@ -2,28 +2,35 @@
 A runner to run the analysis directly on remotes using
 '''
 
-from newsrods.sparkrods import get_streams
-from newsrods.query import do_query  # noqa # pylint: disable=all
-
 import os
-from pyspark import SparkContext  # pylint: disable=import-error
-import yaml
+
+from newsrods.query import do_query
+from newsrods.sparkrods import get_streams
+
+from pyspark import SparkContext
+
+from yaml import safe_dump
 
 
 def main():
-    '''
+    """
     Link the file loading with the query
-    '''
+    """
 
-    context = SparkContext(appName="iNewspaperRods")
-    issues = get_streams(context, source="oids." +
-                         os.environ['SGE_TASK_ID'] + ".txt")
-    results = do_query(issues, 'input.1.data')
+    context = SparkContext(appName='iNewspaperRods')
 
-    with open('result.' + os.environ['SGE_TASK_ID'] +
-              '.yml', 'w') as result_file:
-        result_file.write(yaml.safe_dump(dict(results)))
+    log = context._jvm.org.apache.log4j.LogManager.getLogger(__name__)
+
+    issues = get_streams(context,
+                         os.environ['USER'],
+                         source='oids.{}.txt'.format(os.environ['SGE_TASK_ID'])
+                         )
+    results = do_query(issues, 'input.1.data', log)
+
+    with open('result.{}.yml'.
+              format(os.environ['SGE_TASK_ID']), 'w') as result_file:
+        result_file.write(safe_dump(dict(results)))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

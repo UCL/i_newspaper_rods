@@ -4,7 +4,6 @@ This project uses batched Apache PySpark queries on Legion to run queries over t
 Digital Archive. It is assumed that all queries are grouped by year, so that the results of
 different years can be concatenated together without any processing.
 
-While iRODS is in the name of the project, this is historical 
 
 ##### Architecture Motivation
 
@@ -24,7 +23,7 @@ reasons for it:
 # Local Machine Requirements
 
   * Apache Spark
-  * Python 2.7
+  * Python 3.5
 
 # Executing
 
@@ -34,21 +33,19 @@ Any query can be tested on your local machine, using a tiny subset of the total
 file archive. This is achieved using: 
 
 ```
-fab setup:query=queries/articles_containing_words.py,datafile=query_args/interesting_gender_words.txt,number_oid=5 test
+fab run-local -u ccearkl -d analysis/place_words.csv -q queries/words_per_year.py
 ```
+
+For this to work you must have password-less ssh access from your machine to GPFS set up.
 
 ### Running on HPC Resources
 
 In theory this project can be run on either Legion or Grace. However, testing has only been done on 
 Legion. Also, the rsd-modules modules (which include Spark which this project requires) have not yet
 been set up on Grace. However, once that has all been set up, the same commands should work for grace
-if the command `legion` is substituted for `grace`, with the same parameters. 
+if the url for `legion` is substituted for `grace`. 
+
+For this to work you must have password-less ssh access from legion to GPFS set up.
 
 You can run the program to run with:
-`fab setup:query=queries/articles_containing_words.py,datafile=query_args/interesting_gender_words.txt,number_oid=0,years_per_chunk=5 legion:username=<YOUR_UCL_USER_ID> prepare sub`
-
-You can see the status of your jobs with: `fab legion:username=<YOUR_UCL_USER_ID> stat`
-
-**Note** that the `prepare` and `sub` tasks must be run as part of the same `fab`
-invocation because they create a folder with the current time and date on legion to
-store all the data.
+`fab -H "<username>@legion.rc.ucl.ac.uk" run-remote -n 10 -u ccearkl -d analysis/place_words.csv -q queries/words_per_year.py -y 3`

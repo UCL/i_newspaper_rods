@@ -16,4 +16,4 @@ module load spark
 
 echo "Running $JOB_NAME $SGE_TASK_ID"
 
-pyspark < newsrods/remote_runner.py
+PYSPARK_PYTHON=python3 pyspark < newsrods/remote_runner.py

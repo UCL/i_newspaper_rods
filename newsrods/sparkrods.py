@@ -1,23 +1,38 @@
 """
-Module to load and read the files using spark
+Module to load and parse a list of files into a Spark RDD
+of Issues. This assumes that the files are stored on the
+research data GPFS system which can be accessed over SSH
+without any user interaction.
 """
 
 from fs.sshfs import SSHFS
 
 from newsrods.issue import Issue
 
+# This is the URL of the research data GPFS
 DATA_STORE_HOST = 'live.rd.ucl.ac.uk'
 
 
 def get_streams(context, username, source='oids.txt'):
     """
-    Turn a list of oids in a file into a RDD of Issues
+    Given a Spark Context, a username to the research data store GPFS
+    which has passworldless ssh keys already set up, and a source file
+    to read filenames from, load all the files from the RD GPFS and turn
+    them into Issues. The Issues are returned as a Spark RDD
     """
-    filenames = [oid.strip() for oid in list(open(source))]
+    filenames = [filename.strip() for filename in list(open(source))]
 
-    fs = SSHFS(host=DATA_STORE_HOST, user=username)
+    def filename_to_issue(filename):
+        """
+        Given a filename, load it from GPFS and parse it into an Issue
+        """
+        fs = SSHFS(host=DATA_STORE_HOST, user=username)
+        stream = fs.open(filename, 'r', encoding='latin_1')
+        issue = Issue(stream)
+        stream.close()
+        fs.close()
+        return issue
 
     rddoids = context.parallelize(filenames)
-    issues = rddoids.map(lambda filename: fs.open(filename)) \
-                    .map(lambda stream: Issue(stream))
+    issues = rddoids.map(filename_to_issue)
     return issues
