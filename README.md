@@ -2,7 +2,8 @@
 
 This project uses batched Apache PySpark queries on Legion to run queries over the Times
 Digital Archive. It is assumed that all queries are grouped by year, so that the results of
-different years can be concatenated together without any processing.
+different years can be concatenated together without any processing. If that is not the case,
+the code can still be used, but it must be run all as one job.
 
 
 ##### Architecture Motivation
@@ -41,7 +42,7 @@ For this to work you must have password-less ssh access from your machine to GPF
 ### Running on HPC Resources
 
 In theory this project can be run on either Legion or Grace. However, testing has only been done on 
-Legion. Also, the rsd-modules modules (which include Spark which this project requires) have not yet
+Legion. Also, the `rsd-modules` modules (which include Spark which this project requires) have not yet
 been set up on Grace. However, once that has all been set up, the same commands should work for grace
 if the url for `legion` is substituted for `grace`. 
 
