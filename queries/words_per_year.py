@@ -3,15 +3,16 @@ A module to query files for counts of interesting words. This returns
 the number of occurances of each of the target words for each year.
 """
 
-import re
 from operator import add
+
+import regex as re
 
 
 def do_query(issues, interesting_words_file, _):
     """
     Get the count of specific words of interest by year
     """
-    interesting_words = [re.compile(r'\b' + word.strip() + r'\b', re.I | re.U)
+    interesting_words = [re.compile(r'\b' + word.strip() + r'\b', flags=re.I | re.U)
                          for word in list(open(interesting_words_file))]
 
     # Map each article in each issue to a year of publication
