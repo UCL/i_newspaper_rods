@@ -10,7 +10,7 @@
 #$ -wd ${run_at}
 #$ -t 1-${last}
 
-module load python2/recommended
+module load python3/recommended
 module load rsd-modules
 module load spark
 
