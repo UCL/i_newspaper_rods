@@ -1,18 +1,19 @@
-'''
+"""
 Module for issues. Each issue is a full newspaper
-'''
+"""
 
 from datetime import datetime
 from logging import getLogger
-from lxml import etree  # pylint: disable=all
+
+from lxml import etree
 
 from newsrods.article import Article
 
 
 class Issue(object):
-    '''
+    """
     Class to represent an issue which is made up or articles
-    '''
+    """
 
     def __init__(self, stream):
         self.logger = getLogger('py4j')
@@ -22,7 +23,7 @@ class Issue(object):
         try:
             self.tree = etree.parse(stream, parser)
         except etree.XMLSyntaxError as error:
-            self.logger.error("Error when parsing %s: %s", error.code,
+            self.logger.error('Error when parsing %s: %s', error.code,
                               error.msg)
             self.tree = None
             self.issue = ''
@@ -30,19 +31,7 @@ class Issue(object):
             self.date = datetime.now()
             self.page_count = 0
             self.day_of_week = ''
-            return
-        except error:
-            try:
-                self.tree = etree.parse(stream, parser)
-            except Exception as error2:
-                self.logger.error("Something terrible happened: %s", error2)
-                self.tree = None
-                self.issue = ''
-                self.articles = []
-                self.date = datetime.now()
-                self.page_count = 0
-                self.day_of_week = ''
-                return
+            raise error
         # DTD says there's only one issue element
         # Note there are two different DTDs:
         # GALENP: /GALENP/*/issue/page/article/text/*/p/wd
@@ -56,13 +45,13 @@ class Issue(object):
                          for article in self.query('.//article')]
         raw_date = self.single_query('//pf/text()')
         if raw_date:
-            self.date = datetime.strptime(raw_date, "%Y%m%d")
+            self.date = datetime.strptime(raw_date, '%Y%m%d')
         else:
             self.date = None
         try:
             self.page_count = int(self.single_query('//ip/text()'))
         except Exception as error:
-            self.logger.error("Failed to get page count: %s", error)
+            self.logger.error('Failed to get page count: %s', error)
             self.page_count = 0
 
         self.day_of_week = self.single_query('//dw/text()')
@@ -89,7 +78,8 @@ class Issue(object):
 
     def __iter__(self):
         # Somehow iterate through all the articles
-        pass
+        for article in self.articles:
+            yield article
 
     def images(self):
         # Somehow iterate through all the pictures' metadata
