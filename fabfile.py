@@ -30,19 +30,22 @@ def run_local(conn, username, datafile, query, number=5):
     Run the code locally to test
     """
     prepare(query, datafile)
-    storeids(number, username)
+    storeids(int(number), username)
     pytest(conn)
     pyspark_local(conn)
 
 
 @task
-def run_remote(conn, datafile, query, username, years_per_chunk, number=0):
+def run_remote(conn, datafile, query, username, years_per_chunk,
+               min_year=0, max_year=9e9, number=0):
     """
     Run the code on a remote server
     """
     prepare(query, datafile)
-    storeids(number, username)
-    last = breakup(int(years_per_chunk))
+    storeids(int(number), username)
+    last = breakup(int(years_per_chunk),
+                   int(min_year),
+                   int(max_year))
     run_at = make_target_dir(username)
     upload(conn, last, run_at)
     test_remote(conn, run_at)
@@ -102,17 +105,20 @@ def pytest(conn):
     conn.run('cd results && py.test', shell='/bin/bash', env=environ)
 
 
-def breakup(years_per_chunk):
+def breakup(years_per_chunk, min_year, max_year):
     """
     Break up the input based on the year of output
     """
+    print('Pruning years with min year', min_year, 'and max year', max_year)
     all_files = read_csv(join(LOCAL_DEPLOY_DIR, OID_FILE),
                          header=None, names=['Path'])
     all_files = all_files.assign(Year=all_files.
                                  Path.
-                                 map(lambda path: int(filter(is_year,
-                                                      path.split('/')).
-                                                      __next__())))
+                                 map(lambda path:
+                                     int(filter(is_year, path.split('/')).
+                                         __next__())))
+    all_files = all_files[(all_files.Year >= min_year) &
+                          (all_files.Year <= max_year)]
     all_files = all_files.assign(YearChunk=all_files.
                                  Year.map(lambda year:
                                           int(year / years_per_chunk)))
