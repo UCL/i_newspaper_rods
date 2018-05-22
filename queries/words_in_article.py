@@ -2,8 +2,9 @@
 This module finds which words are contained together in articles.
 """
 
-import re
 from operator import add
+
+import regex as re
 
 
 def do_query(issues, interesting_words_file, _):
