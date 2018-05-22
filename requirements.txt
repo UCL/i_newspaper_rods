@@ -5,3 +5,4 @@ pytest>=3.2
 psutil>=5.4
 requests>=2.18
 fabric>=1.14
+regex>=2018
