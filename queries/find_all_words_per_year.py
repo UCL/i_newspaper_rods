@@ -1,7 +1,22 @@
-def mapper(issue):
-    word_count = 0
-    for article in issue.articles:
-        word_count += len(article.words)
-    return {issue.date.year: [1, word_count]}
+"""
+A module to query article counts. This returns
+the number of articles per year.
+"""
 
-reducer=merge_under(double_sum)
+from operator import add
+
+
+def do_query(issues, _infile, _log):
+    """
+    Get the total count of words written per year
+    """
+    # For each article map the date, to its length
+    article_lengths = issues.flatMap(lambda issue: [(issue.date.year,
+                                                     len(article.words))
+                                                    for article in
+                                                    issue.articles])
+    # Now add sum the word counts
+    word_counts = article_lengths \
+        .reduceByKey(add) \
+        .collect()
+    return word_counts
